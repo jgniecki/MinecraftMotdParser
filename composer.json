@@ -1,0 +1,28 @@
+{
+    "name": "dev-lancer/minecraft-motd-parser",
+    "type": "library",
+    "description": "PHP library to query Minecraft servers",
+    "keywords": ["minecraft", "status", "server", "query", "php", "ping", "bedrock", "raknet"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jakub Gniecki",
+            "email": "kubuspl@onet.eu"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=7.4",
+        "ext-mbstring": "*",
+        "ext-json": "*",
+        "ext-iconv": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "DevLancer\\MinecraftMotdParser\\": "src/"
+        }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10"
+    }
+}
