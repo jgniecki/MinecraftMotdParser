@@ -1,89 +1,57 @@
-<?php declare(strict_types=1);
-/**
- * @author Jakub Gniecki <kubuspl@onet.eu>
- * @copyright
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+<?php
 
 namespace DevLancer\MinecraftMotdParser;
 
 class TextParser
 {
-    public function parse(string $text): array
+    private string $char;
+    private FormatCollection $formatCollection;
+    private ColorCollection  $colorCollection;
+
+
+    public function __construct(FormatCollection $formatCollection, ColorCollection  $colorCollection, string $char = "§")
     {
-        if ($text == "\n") {
-            $container = new Container();
-            $container->setText("\n");
-            return [$container];
-        }
+        $this->char = $char;
+        $this->formatCollection = $formatCollection;
+        $this->colorCollection = $colorCollection;
+    }
 
-        $result = [];
-        $data = \explode("\n", $text);
-        $elem = 1;
+    public function parse(string $content, MotdItemInterface $container): array
+    {
+        $list = [];
+        $motdItem = clone $container;
+        $regex = "/" . $this->char . "([0-9a-fklmnor])(.*?)(?=" . $this->char . "[0-9a-fklmnor]|$)/";
+        $lines = \preg_split('/\\n/', $content);
+        foreach ($lines as $line) {
+            \preg_match_all($regex, $line, $output);
 
-        foreach ($data as $item) {
-            if (empty($item) && \count($data) > $elem) {
-                $result = \array_merge($result, $this->parse("\n"));
-                $elem++;
+            if (!isset($output[1]) || !isset($output[2]))
                 continue;
-            }
 
-            \preg_match_all('/(§|\\u00A7)([0-9a-fk-or])/', $item, $match);
-            $split = \preg_split('/(§|\\u00A7)([0-9a-fk-or])/', $item);
-            $container = new Container();
+            $keys = $output[1];
+            $values = $output[2];
 
+            foreach ($keys as $id => $key) {
+                $motdItem = ($key == "r")? clone $container : clone $motdItem;
 
-            if (isset($split[0]) && trim($split[0]) == "") {
-                unset($split[0]);
-                sort($split, SORT_NUMERIC );
-            }
-
-            foreach ($split as $key => $value) {
-                $container = clone $container;
-                if (!isset($match[0][$key])) {
-                    if (!empty(trim($value))) {
-                        $container->setText($value);
-                        $result[] = $container;
-                    }
-                    continue;
+                if ($this->colorCollection->get($key)) {
+                    $motdItem->setColor($key);
+                } else {
+                    $method = 'set' . \ucfirst($this->formatCollection->get($key)->getName());
+                    \call_user_func([$motdItem, $method], true);
                 }
 
-                if (Format::isColor($match[0][$key])) {
-                    $container->setColor(Format::getColorHex($match[0][$key]));
-                } elseif (Format::isFormat($match[0][$key])) {
-                    $code = $match[2][$key];
-                    if (($code == "r")) {
-                        $container = new Container();
-                        $container->setReset(true);
-                    } else {
-                        if ($code == "k") {
-                            $container->setObfuscated(true);
-                        } else if ($code == "l") {
-                            $container->setBold(true);
-                        } else if ($code == "m") {
-                            $container->setStrikethrough(true);
-                        } else if ($code == "n") {
-                            $container->setUnderlined(true);
-                        } else if ($code == "o") {
-                            $container->setItalic(true);
-                        }
-                    }
-                }
-
-                if (!empty($value)) {
-                    $container->setText($value);
-                    $result[] = $container;
+                if (!empty($values[$id])) {
+                    $motdItem->setText($values[$id]);
+                    $list[] = $motdItem;
                 }
             }
 
-            if (\count($data) > $elem++) {
-                $container = new Container();
-                $container->setText("\n");
-                $result[] = $container;
-            }
+            $newLine = clone $container;
+            $newLine->setText("\n");
+            $list[] = $newLine;
         }
 
-        return $result;
+        return $list;
     }
 }

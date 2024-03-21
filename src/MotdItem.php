@@ -1,14 +1,8 @@
-<?php declare(strict_types=1);
-/**
- * @author Jakub Gniecki <kubuspl@onet.eu>
- * @copyright
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+<?php
 
 namespace DevLancer\MinecraftMotdParser;
 
-class Container implements \JsonSerializable
+class MotdItem implements \JsonSerializable, MotdItemInterface
 {
     private ?string $text = null;
     private ?string $color = null;
@@ -30,7 +24,7 @@ class Container implements \JsonSerializable
     /**
      * @param string|null $text
      */
-    public function setText(?string $text): void
+    public function setText(string $text): void
     {
         $this->text = $text;
     }
@@ -46,7 +40,7 @@ class Container implements \JsonSerializable
     /**
      * @param string|null $color
      */
-    public function setColor(?string $color): void
+    public function setColor(string $color): void
     {
         $this->color = $color;
     }
@@ -159,31 +153,5 @@ class Container implements \JsonSerializable
             'strikethrough' => $this->isStrikethrough(),
             'reset' => $this->isReset(),
         ];
-    }
-
-    public function __toString()
-    {
-        $result = $this->getText();
-        if (!$result)
-            $result = "";
-
-        if ($this->isBold())
-            $result = sprintf("<b>%s</b>", $result);
-
-        if ($this->isUnderlined())
-            $result = sprintf("<u>%s</u>", $result);
-
-        if ($this->isItalic())
-            $result = sprintf("<i>%s</i>", $result);
-
-        if ($this->isStrikethrough())
-            $result = sprintf("<s>%s</s>", $result);
-
-        if ($this->getColor())
-            $result = sprintf("<span style='color: %s;'>%s</span>", Format::getColorHex($this->getColor()), $result);
-
-        if ($this->getText() == "\n")
-            $result .= "<br />";
-        return $result;
     }
 }
