@@ -10,80 +10,96 @@ namespace DevLancer\MinecraftMotdParser;
 
 class TextParser
 {
-    public function parse(string $text): array
+    private array $list = [];
+    private function generate(string $text): void
     {
         if ($text == "\n") {
             $container = new Container();
             $container->setText("\n");
-            return [$container];
+            $this->list[] = $container;
+            return;
         }
 
-        $result = [];
         $data = \explode("\n", $text);
+        $nElem = substr_count($text, "\n");
         $elem = 1;
 
         foreach ($data as $item) {
-            if (empty($item) && \count($data) > $elem) {
-                $result = \array_merge($result, $this->parse("\n"));
+            if (empty($item)) {
+                $this->generate("\n");
                 $elem++;
                 continue;
             }
 
-            \preg_match_all('/(§|\\u00A7)([0-9a-fk-or])/', $item, $match);
-            $split = \preg_split('/(§|\\u00A7)([0-9a-fk-or])/', $item);
             $container = new Container();
-
-
-            if (isset($split[0]) && trim($split[0]) == "") {
-                unset($split[0]);
-                sort($split, SORT_NUMERIC );
+            if ($item == "§" || strpos($item, '§') === false) {
+                $container->setText($item);
+                $this->list[] = $container;
+                $elem++;
+                continue;
             }
 
-            foreach ($split as $key => $value) {
+            $match = explode('§', $item);
+            foreach ($match as $key => $part) {
                 $container = clone $container;
-                if (!isset($match[0][$key])) {
-                    if (!empty(trim($value))) {
-                        $container->setText($value);
-                        $result[] = $container;
-                    }
-                    continue;
-                }
+                $code = $part[0];
+                $content = "";
 
-                if (Format::isColor($match[0][$key])) {
-                    $container->setColor(Format::getColorHex($match[0][$key]));
-                } elseif (Format::isFormat($match[0][$key])) {
-                    $code = $match[2][$key];
-                    if (($code == "r")) {
+                if (strlen($part) > 1)
+                    $content = substr($part, 1);
+
+                $container->setText($content);
+                if (isset(Format::FORMAT[$code])) {
+                    if ($code == 'r') {
                         $container = new Container();
                         $container->setReset(true);
-                    } else {
-                        if ($code == "k") {
-                            $container->setObfuscated(true);
-                        } else if ($code == "l") {
-                            $container->setBold(true);
-                        } else if ($code == "m") {
-                            $container->setStrikethrough(true);
-                        } else if ($code == "n") {
-                            $container->setUnderlined(true);
-                        } else if ($code == "o") {
-                            $container->setItalic(true);
-                        }
+                        $container->setText($content);
+                        $this->list[] = $container;
+                        $container = new Container();
+                        continue;
                     }
+
+                    if ($code == "k") {
+                        $container->setObfuscated(true);
+                    } else if ($code == "l") {
+                        $container->setBold(true);
+                    } else if ($code == "m") {
+                        $container->setStrikethrough(true);
+                    } else if ($code == "n") {
+                        $container->setUnderlined(true);
+                    } else if ($code == "o") {
+                        $container->setItalic(true);
+                    }
+                }else if (isset(Color::COLOR_HEX[$code])) {
+                    $container->setColor($code);
+                    if (empty($content))
+                        continue;
+                } else {
+                    //przemysl to jeszcze, czy zawsze
+                    $content = $code . $content;
+                    if ($key > 0)
+                        $content = '§' . $content;
+
+                    $container->setText($content);
                 }
 
-                if (!empty($value)) {
-                    $container->setText($value);
-                    $result[] = $container;
-                }
+                $this->list[] = $container;
+                $container->setObfuscated(false); //czy to tak ma byc?
             }
 
-            if (\count($data) > $elem++) {
-                $container = new Container();
-                $container->setText("\n");
-                $result[] = $container;
-            }
+            if ($elem <= $nElem)
+                $this->generate("\n");
+
+            $elem++;
         }
 
-        return $result;
+
+    }
+
+    public function parse(string $text): array
+    {
+        $this->list = [];
+        $this->generate($text);
+        return $this->list;
     }
 }

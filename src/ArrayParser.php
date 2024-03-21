@@ -15,18 +15,28 @@ class ArrayParser
     public function parse(array $list): array
     {
         $this->list = [];
-        $this->arrayParse([$list], new Container());
+        $this->generate([$list], new Container());
 
         return $this->list;
     }
 
-    private function arrayParse(array $list, Container $parent)
+    private function generate(array $list, Container $parent): void
     {
         foreach ($list as $data) {
             $container = clone $parent;
 
-            if (isset($data['color']))
-                $container->setColor($data['color']);
+            if (is_string($data)) {
+                $container->setText($data);
+                $this->list[] = $container;
+                continue;
+            }
+
+            if (isset($data['color'])) {
+                $color = Color::getColorCode($data['color']);
+                if (!$color)
+                    $color = $data['color'];
+                $container->setColor($color);
+            }
 
             if (isset($data['bold']))
                 $container->setBold((bool) $data['bold']);
@@ -44,24 +54,22 @@ class ArrayParser
                 $text = $data['text'];
                 $newLine = strpos($text, "\n");
                 $container->setText(($newLine === false)? $text : substr($text, 0, $newLine));
-            } else {
-                $container->setText(null);
             }
 
             $this->list[] = $container;
-            if (isset($newLine) && $newLine !== false) {
+            if (isset($newLine) && $newLine !== false && isset($text)) {
                 $container = new Container();
                 $container->setText("\n");
                 $this->list[] = $container;
 
                 if (strlen(substr($text, $newLine+1)) > 0)
-                    $this->arrayParse([['text' => substr($text, $newLine+1)]], new Container());
+                    $this->generate([['text' => substr($text, $newLine+1)]], new Container());
 
                 $container = new Container();
             }
 
             if (isset($data['extra']))
-                $this->arrayParse($data['extra'], $container);
+                $this->generate($data['extra'], clone $container);
         }
     }
     /**

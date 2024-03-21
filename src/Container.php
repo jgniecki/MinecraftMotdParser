@@ -160,30 +160,4 @@ class Container implements \JsonSerializable
             'reset' => $this->isReset(),
         ];
     }
-
-    public function __toString()
-    {
-        $result = $this->getText();
-        if (!$result)
-            $result = "";
-
-        if ($this->isBold())
-            $result = sprintf("<b>%s</b>", $result);
-
-        if ($this->isUnderlined())
-            $result = sprintf("<u>%s</u>", $result);
-
-        if ($this->isItalic())
-            $result = sprintf("<i>%s</i>", $result);
-
-        if ($this->isStrikethrough())
-            $result = sprintf("<s>%s</s>", $result);
-
-        if ($this->getColor())
-            $result = sprintf("<span style='color: %s;'>%s</span>", Format::getColorHex($this->getColor()), $result);
-
-        if ($this->getText() == "\n")
-            $result .= "<br />";
-        return $result;
-    }
 }
