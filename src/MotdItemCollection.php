@@ -62,5 +62,33 @@ class MotdItemCollection implements \Countable, \IteratorAggregate
     public function remove(int $id): void
     {
         unset($this->items[$id]);
+        $this->items = array_values($this->items);
+    }
+
+    public function mergeSimilarItem()
+    {
+        do {
+            $old = clone $this;
+            for ($i = 1; $i < $this->count(); $i++) {
+                $left = $this->get($i-1);
+                $right = $this->get($i);
+                if ($this->compareItem($left, $right)) {
+                    $this->get($i-1)->setText($left->getText() . $right->getText());
+                    $this->remove($i);
+                    $i++;
+                }
+            }
+        } while($old != $this);
+    }
+
+    public function compareItem(MotdItemInterface $motdItemLeft, MotdItemInterface $motdItemRight): bool
+    {
+        $motdItemLeft = clone $motdItemLeft;
+        $motdItemRight = clone $motdItemRight;
+
+        $motdItemLeft->setText(null);
+        $motdItemRight->setText(null);
+
+        return $motdItemLeft == $motdItemRight;
     }
 }
