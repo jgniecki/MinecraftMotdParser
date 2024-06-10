@@ -20,6 +20,15 @@ class RawGenerator implements GeneratorInterface
         foreach ($collection as $motdItem) {
             $_item = "";
 
+            if ($motdItem->isReset())
+                $_item .= $this->symbol . 'r';
+
+            if ($motdItem->getColor()) {
+                $color = $motdItem->getColor();
+                if (strpos($color, '#') === false)
+                    $_item .= $this->symbol . $motdItem->getColor();
+            }
+
             if ($motdItem->isObfuscated())
                 $_item .= $this->symbol . 'k';
             if ($motdItem->isBold())
@@ -30,14 +39,6 @@ class RawGenerator implements GeneratorInterface
                 $_item .= $this->symbol . 'n';
             if ($motdItem->isItalic())
                 $_item .= $this->symbol . 'o';
-            if ($motdItem->isReset())
-                $_item .= $this->symbol . 'r';
-
-            if ($motdItem->getColor()) {
-                $color = $motdItem->getColor();
-                if (strpos($color, '#') === false)
-                    $_item .= $this->symbol . $motdItem->getColor();
-            }
 
             if  ($motdItem->getText())
                 $_item .= $motdItem->getText();
