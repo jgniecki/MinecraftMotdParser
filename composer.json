@@ -1,8 +1,8 @@
 {
     "name": "dev-lancer/minecraft-motd-parser",
     "type": "library",
-    "description": "PHP library to query Minecraft servers",
-    "keywords": ["minecraft", "status", "server", "query", "php", "ping", "bedrock", "raknet"],
+    "description": "PHP library to parse minecraft server motd",
+    "keywords": ["minecraft", "motd", "server", "php", "parser", "generator"],
     "license": "MIT",
     "authors": [
         {
