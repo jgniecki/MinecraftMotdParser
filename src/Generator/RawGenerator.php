@@ -30,6 +30,8 @@ class RawGenerator implements GeneratorInterface
                 $_item .= $this->symbol . 'n';
             if ($motdItem->isItalic())
                 $_item .= $this->symbol . 'o';
+            if ($motdItem->isReset())
+                $_item .= $this->symbol . 'r';
 
             if ($motdItem->getColor()) {
                 $color = $motdItem->getColor();
@@ -40,8 +42,6 @@ class RawGenerator implements GeneratorInterface
             if  ($motdItem->getText())
                 $_item .= $motdItem->getText();
 
-            if ($motdItem->isReset())
-                $_item .= $this->symbol . 'r';
             $result .= $_item;
         }
 
