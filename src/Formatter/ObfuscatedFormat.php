@@ -2,7 +2,7 @@
 
 namespace DevLancer\MinecraftMotdParser\Formatter;
 
-use DevLancer\MinecraftMotdParser\FormatterInterface;
+use DevLancer\MinecraftMotdParser\Contracts\FormatterInterface;
 
 class ObfuscatedFormat implements FormatterInterface
 {

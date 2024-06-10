@@ -2,8 +2,8 @@
 
 namespace DevLancer\MinecraftMotdParser\Formatter;
 
-use DevLancer\MinecraftMotdParser\ColorFormatterInterface;
-use DevLancer\MinecraftMotdParser\HtmlFormatterInterface;
+use DevLancer\MinecraftMotdParser\Contracts\ColorFormatterInterface;
+use DevLancer\MinecraftMotdParser\Contracts\HtmlFormatterInterface;
 
 class ColorFormat implements HtmlFormatterInterface, ColorFormatterInterface
 {

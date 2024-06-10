@@ -3,6 +3,7 @@
 namespace DevLancer\MinecraftMotdParser;
 
 use ArrayIterator;
+use DevLancer\MinecraftMotdParser\Contracts\ColorFormatterInterface;
 use DevLancer\MinecraftMotdParser\Formatter\ColorFormat;
 
 class ColorCollection  implements \Countable, \IteratorAggregate

@@ -2,6 +2,8 @@
 
 namespace DevLancer\MinecraftMotdParser;
 
+use DevLancer\MinecraftMotdParser\Contracts\MotdItemInterface;
+
 class MotdItem implements \JsonSerializable, MotdItemInterface
 {
     private ?string $text = null;
@@ -24,7 +26,7 @@ class MotdItem implements \JsonSerializable, MotdItemInterface
     /**
      * @param string|null $text
      */
-    public function setText(string $text): void
+    public function setText(?string $text): void
     {
         $this->text = $text;
     }

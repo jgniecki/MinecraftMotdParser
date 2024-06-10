@@ -1,26 +1,35 @@
-<?php declare(strict_types=1);
-/**
- * @author Jakub Gniecki <kubuspl@onet.eu>
- * @copyright
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+<?php
 
-namespace DevLancer\MinecraftMotdParser;
+namespace DevLancer\MinecraftMotdParser\Parser;
 
-class ArrayParser
+use DevLancer\MinecraftMotdParser\ColorCollection;
+use DevLancer\MinecraftMotdParser\Contracts\MotdItemInterface;
+use DevLancer\MinecraftMotdParser\Contracts\ParserInterface;
+use DevLancer\MinecraftMotdParser\MotdItem;
+use DevLancer\MinecraftMotdParser\MotdItemCollection;
+
+class ArrayParser implements ParserInterface
 {
-    private array $list = [];
+    private ?MotdItemCollection $list = null;
     private ColorCollection  $colorCollection;
     public function __construct(ColorCollection  $colorCollection)
     {
         $this->colorCollection = $colorCollection;
     }
 
-    public function parse(array $list): array
+    /**
+     * @param array $data
+     * @param MotdItemCollection $collection
+     * @return MotdItemCollection
+     */
+    public function parse($data, MotdItemCollection $collection): MotdItemCollection
     {
-        $this->list = [];
-        $this->generate([$list], new MotdItem());
+        if (!$this->supports($data)) {
+            throw new \InvalidArgumentException("Unsupported data");
+        }
+
+        $this->list = $collection;
+        $this->generate([$data], new MotdItem());
 
         return $this->list;
     }
@@ -32,7 +41,7 @@ class ArrayParser
 
             if (is_string($data)) {
                 $container->setText($data);
-                $this->list[] = $container;
+                $this->list->add($container);
                 continue;
             }
 
@@ -61,11 +70,11 @@ class ArrayParser
                 $container->setText(($newLine === false)? $text : substr($text, 0, $newLine));
             }
 
-            $this->list[] = $container;
+            $this->list->add($container);
             if (isset($newLine) && $newLine !== false && isset($text)) {
                 $container = new MotdItem();
                 $container->setText("\n");
-                $this->list[] = $container;
+                $this->list->add($container);
 
                 if (strlen(substr($text, $newLine+1)) > 0)
                     $this->generate([['text' => substr($text, $newLine+1)]], new MotdItem());
@@ -77,11 +86,9 @@ class ArrayParser
                 $this->generate($data['extra'], clone $container);
         }
     }
-    /**
-     * @return array
-     */
-    public function getList(): array
+
+    public function supports($data): bool
     {
-        return $this->list;
+        return \is_array($data);
     }
 }

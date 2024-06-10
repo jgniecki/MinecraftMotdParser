@@ -2,7 +2,7 @@
 
 namespace DevLancer\MinecraftMotdParser\Formatter;
 
-use DevLancer\MinecraftMotdParser\HtmlFormatterInterface;
+use DevLancer\MinecraftMotdParser\Contracts\HtmlFormatterInterface;
 
 class UnderlinedFormat implements HtmlFormatterInterface
 {

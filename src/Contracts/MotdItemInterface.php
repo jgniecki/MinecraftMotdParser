@@ -1,6 +1,6 @@
 <?php
 
-namespace DevLancer\MinecraftMotdParser;
+namespace DevLancer\MinecraftMotdParser\Contracts;
 
 interface MotdItemInterface
 {

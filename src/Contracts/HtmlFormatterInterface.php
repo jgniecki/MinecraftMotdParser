@@ -1,8 +1,6 @@
 <?php
 
-namespace DevLancer\MinecraftMotdParser;
-
-use DevLancer\MinecraftMotdParser\FormatterInterface;
+namespace DevLancer\MinecraftMotdParser\Contracts;
 
 interface HtmlFormatterInterface extends FormatterInterface
 {

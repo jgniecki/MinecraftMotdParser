@@ -4,6 +4,7 @@ namespace DevLancer\MinecraftMotdParser;
 
 
 use ArrayIterator;
+use DevLancer\MinecraftMotdParser\Contracts\FormatterInterface;
 use DevLancer\MinecraftMotdParser\Formatter\BoldFormat;
 use DevLancer\MinecraftMotdParser\Formatter\ItalicFormat;
 use DevLancer\MinecraftMotdParser\Formatter\ObfuscatedFormat;
