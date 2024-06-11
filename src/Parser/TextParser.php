@@ -15,11 +15,11 @@ class TextParser implements ParserInterface
     private ColorCollection  $colorCollection;
 
 
-    public function __construct(FormatCollection $formatCollection, ColorCollection  $colorCollection, string $symbol = "§")
+    public function __construct(?FormatCollection $formatCollection = null, ?ColorCollection  $colorCollection = null, string $symbol = "§")
     {
         $this->symbol = $symbol;
-        $this->formatCollection = $formatCollection;
-        $this->colorCollection = $colorCollection;
+        $this->formatCollection = $formatCollection ?? FormatCollection::generate();
+        $this->colorCollection = $colorCollection ?? ColorCollection::generate();
     }
 
     /**
