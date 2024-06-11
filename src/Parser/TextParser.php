@@ -33,10 +33,19 @@ class TextParser implements ParserInterface
             throw new \InvalidArgumentException("Unsupported data");
         }
 
+        if ($data == "\n") {
+            $newLine = new MotdItem();
+            $newLine->setText("\n");
+            $collection->add($newLine);
+            return $collection;
+        }
+
         $motdItem = new MotdItem();
         $regex = "/" . $this->symbol . "([0-9a-fklmnor])(.*?)(?=" . $this->symbol . "[0-9a-fklmnor]|$)/";
+
         $lines = \preg_split('/\\n/', $data);
-        foreach ($lines as $line) {
+        for ($i = 0; $i < \count($lines); $i++) {
+            $line = $lines[$i];
             \preg_match_all($regex, $line, $output);
 
             if (!isset($output[1]) || !isset($output[2]))
@@ -62,10 +71,11 @@ class TextParser implements ParserInterface
                         $motdItem = new MotdItem();
                 }
             }
-
-            $newLine = new MotdItem();
-            $newLine->setText("\n");
-            $collection->add($newLine);
+            if ($i+1 < \count($lines)) {
+                $newLine = new MotdItem();
+                $newLine->setText("\n");
+                $collection->add($newLine);
+            }
         }
 
         return $collection;
@@ -73,6 +83,6 @@ class TextParser implements ParserInterface
 
     public function supports($data): bool
     {
-        return is_string($data);
+        return \is_string($data) && !empty($data);
     }
 }
