@@ -31,7 +31,7 @@ class ColorFormat implements HtmlFormatterInterface, ColorFormatterInterface
 
     public function getStyle(): string
     {
-        return 'color: ' . $this->getColor();
+        return 'color: ' . $this->getColor() . ';';
     }
 
     public function getTag(): string
