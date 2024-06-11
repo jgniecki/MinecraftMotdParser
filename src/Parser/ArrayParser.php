@@ -12,9 +12,9 @@ class ArrayParser implements ParserInterface
 {
     private ?MotdItemCollection $list = null;
     private ColorCollection  $colorCollection;
-    public function __construct(ColorCollection  $colorCollection)
+    public function __construct(?ColorCollection  $colorCollection = null)
     {
-        $this->colorCollection = $colorCollection;
+        $this->colorCollection = $colorCollection ?? ColorCollection::generate();
     }
 
     /**
@@ -34,56 +34,70 @@ class ArrayParser implements ParserInterface
         return $this->list;
     }
 
-    private function generate(array $list, MotdItemInterface $parent): void
+    private function addReset()
     {
-        foreach ($list as $data) {
-            $container = clone $parent;
+        $motdItem = new MotdItem();
+        $motdItem->setReset(true);
+        $this->list->add($motdItem);
+    }
 
-            if (is_string($data)) {
-                $container->setText($data);
-                $this->list->add($container);
+    private function generate(array $data, MotdItemInterface $parent)
+    {
+        foreach ($data as $item) {
+            if (empty($item))
+                continue;
+
+            $motdItem = clone $parent;
+
+            if (\is_string($item)) {
+                $motdItem->setText($item);
+                $this->list->add($motdItem);
+                $this->addReset();
                 continue;
             }
 
-            if (isset($data['color'])) {
-                $color = $this->colorCollection->get($data['color']);
-                if (!$color)
-                    $color = $data['color'];
-                $container->setColor($color);
+            if (isset($item['color'])) {
+                $color = $this->colorCollection->get($item['color']);
+                $color = (!$color)? $item['color'] : $color->getKey();
+                $motdItem->setColor($color);
+            }
+            if (isset($item['bold']))
+                $motdItem->setBold((bool) $item['bold']);
+
+            if (isset($item['underlined']))
+                $motdItem->setUnderlined((bool) $item['underlined']);
+
+            if (isset($item['strikethrough']))
+                $motdItem->setStrikethrough((bool) $item['strikethrough']);
+
+            if (isset($item['italic']))
+                $motdItem->setItalic((bool) $item['italic']);
+
+            if (isset($item['obfuscated']))
+                $motdItem->setObfuscated((bool) $item['obfuscated']);
+
+            if (isset($item['reset']))
+                $motdItem->setReset((bool) $item['reset']);
+
+            if (isset($item['text'])) {
+                $text = $item['text'];
+                $newLine = \strpos($text, "\n");
+                $motdItem->setText(($newLine === false)? $text : \substr($text, 0, $newLine));
+                $this->list->add($motdItem);
+                $this->addReset();
+
+                if ($newLine !== false) {
+                    $newMotdItem = new MotdItem();
+                    $newMotdItem->setText("\n");
+                    $this->list->add($newMotdItem);
+
+                    if (\strlen(\substr($text, $newLine+1)) > 0)
+                        $this->generate([['text' => \substr($text, $newLine+1)]], $motdItem);
+                }
             }
 
-            if (isset($data['bold']))
-                $container->setBold((bool) $data['bold']);
-
-            if (isset($data['underlined']))
-                $container->setUnderlined((bool) $data['underlined']);
-
-            if (isset($data['strikethrough']))
-                $container->setStrikethrough((bool) $data['strikethrough']);
-
-            if (isset($data['italic']))
-                $container->setItalic((bool) $data['italic']);
-
-            if (isset($data['text'])) {
-                $text = $data['text'];
-                $newLine = strpos($text, "\n");
-                $container->setText(($newLine === false)? $text : substr($text, 0, $newLine));
-            }
-
-            $this->list->add($container);
-            if (isset($newLine) && $newLine !== false && isset($text)) {
-                $container = new MotdItem();
-                $container->setText("\n");
-                $this->list->add($container);
-
-                if (strlen(substr($text, $newLine+1)) > 0)
-                    $this->generate([['text' => substr($text, $newLine+1)]], new MotdItem());
-
-                $container = new MotdItem();
-            }
-
-            if (isset($data['extra']))
-                $this->generate($data['extra'], clone $container);
+            if (isset($item['extra']))
+                $this->generate($item['extra'], clone $motdItem);
         }
     }
 
