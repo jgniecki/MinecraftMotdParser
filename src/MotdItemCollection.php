@@ -62,9 +62,16 @@ class MotdItemCollection implements \Countable, \IteratorAggregate
     public function remove(int $id): void
     {
         unset($this->items[$id]);
-        $this->items = array_values($this->items);
+        $this->items = \array_values($this->items);
     }
 
+    /**
+     * Merges adjacent items in the collection that are considered similar.
+     *
+     * This method iterates through the collection, comparing each pair of adjacent items using the compareItem method.
+     * If two adjacent items are considered similar, their text properties are concatenated, and the second item is removed.
+     * The process repeats until no further merges are possible.
+     */
     public function mergeSimilarItem()
     {
         do {
@@ -81,6 +88,17 @@ class MotdItemCollection implements \Countable, \IteratorAggregate
         } while($old != $this);
     }
 
+    /**
+     * Compares two MotdItemInterface objects for equality, ignoring the text property.
+     *
+     * This method creates clones of the provided objects to avoid modifying the originals.
+     * It then sets the text property of both cloned objects to null before comparing them.
+     * The comparison checks if all other properties of the two objects are equal.
+     *
+     * @param MotdItemInterface $motdItemLeft The first MotdItemInterface object to compare.
+     * @param MotdItemInterface $motdItemRight The second MotdItemInterface object to compare.
+     * @return bool Returns true if the modified cloned objects are considered equal, false otherwise.
+     */
     public function compareItem(MotdItemInterface $motdItemLeft, MotdItemInterface $motdItemRight): bool
     {
         $motdItemLeft = clone $motdItemLeft;
