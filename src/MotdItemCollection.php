@@ -71,6 +71,10 @@ class MotdItemCollection implements \Countable, \IteratorAggregate
      * This method iterates through the collection, comparing each pair of adjacent items using the compareItem method.
      * If two adjacent items are considered similar, their text properties are concatenated, and the second item is removed.
      * The process repeats until no further merges are possible.
+     *
+     * Note: Items with the text value of "\n" (newline) are not merged.
+     *
+     * @return void
      */
     public function mergeSimilarItem()
     {
@@ -79,7 +83,7 @@ class MotdItemCollection implements \Countable, \IteratorAggregate
             for ($i = 1; $i < $this->count(); $i++) {
                 $left = $this->get($i-1);
                 $right = $this->get($i);
-                if ($this->compareItem($left, $right)) {
+                if ($this->compareItem($left, $right) && $left->getText() != "\n" && $right->getText() != "\n") {
                     $this->get($i-1)->setText($left->getText() . $right->getText());
                     $this->remove($i);
                     $i++;
