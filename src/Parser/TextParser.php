@@ -45,6 +45,7 @@ class TextParser implements ParserInterface
 
         $lines = \preg_split('/\\n/', $data);
         for ($i = 0; $i < \count($lines); $i++) {
+            $motdItem = new MotdItem();
             $line = $lines[$i];
             \preg_match_all($regex, $line, $output);
 
