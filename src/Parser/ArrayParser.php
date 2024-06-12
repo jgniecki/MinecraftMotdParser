@@ -28,17 +28,13 @@ class ArrayParser implements ParserInterface
             throw new \InvalidArgumentException("Unsupported data");
         }
 
+        if (\array_keys($data) !== \range(0, \count($data) - 1))
+            $data = [$data];
+
         $this->list = $collection;
-        $this->generate([$data], new MotdItem());
+        $this->generate($data, new MotdItem());
 
         return $this->list;
-    }
-
-    private function addReset()
-    {
-        $motdItem = new MotdItem();
-        $motdItem->setReset(true);
-        $this->list->add($motdItem);
     }
 
     private function generate(array $data, MotdItemInterface $parent)
@@ -52,7 +48,6 @@ class ArrayParser implements ParserInterface
             if (\is_string($item)) {
                 $motdItem->setText($item);
                 $this->list->add($motdItem);
-                $this->addReset();
                 continue;
             }
 
@@ -84,7 +79,6 @@ class ArrayParser implements ParserInterface
                 $newLine = \strpos($text, "\n");
                 $motdItem->setText(($newLine === false)? $text : \substr($text, 0, $newLine));
                 $this->list->add($motdItem);
-                $this->addReset();
 
                 if ($newLine !== false) {
                     $newMotdItem = new MotdItem();
@@ -103,6 +97,6 @@ class ArrayParser implements ParserInterface
 
     public function supports($data): bool
     {
-        return \is_array($data);
+        return \is_array($data) && !empty($data);
     }
 }
