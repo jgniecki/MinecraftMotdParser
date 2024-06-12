@@ -23,24 +23,30 @@ class RawGenerator implements GeneratorInterface
             $_item = "";
 
             $prevMotdItem = $collection->get($i - 1);
-            if ((!$motdItem->isReset() && $prevMotdItem && $this->hasConflictFormat($prevMotdItem, $motdItem)) || $motdItem->isReset())
+            $hasConflictFormat = false;
+            if (!$motdItem->isReset() && $prevMotdItem && $this->hasConflictFormat($prevMotdItem, $motdItem)) {
+                $_item .= $this->symbol . 'r';
+                $hasConflictFormat = true;
+            }
+
+            if ($motdItem->isReset())
                 $_item .= $this->symbol . 'r';
 
-            if (($motdItem->isReset() && $motdItem->getColor()) || ($motdItem->getColor() && !$this->prevHasColor($prevMotdItem, $motdItem->getColor()))) {
+            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->getColor()) || ($motdItem->getColor() && !$this->prevHasColor($prevMotdItem, $motdItem->getColor()))) {
                 $color = $motdItem->getColor();
                 if (strpos($color, '#') === false)
                     $_item .= $this->symbol . $motdItem->getColor();
             }
 
-            if (($motdItem->isReset() && $motdItem->isObfuscated()) || ($motdItem->isObfuscated() && !$this->prevHasFormat($prevMotdItem, 'isObfuscated')))
+            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->isObfuscated()) || ($motdItem->isObfuscated() && !$this->prevHasFormat($prevMotdItem, 'isObfuscated')))
                 $_item .= $this->symbol . 'k';
-            if (($motdItem->isReset() && $motdItem->isBold()) || ($motdItem->isBold() && !$this->prevHasFormat($prevMotdItem, 'isBold')))
+            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->isBold()) || ($motdItem->isBold() && !$this->prevHasFormat($prevMotdItem, 'isBold')))
                 $_item .= $this->symbol . 'l';
-            if (($motdItem->isReset() && $motdItem->isStrikethrough()) || ($motdItem->isStrikethrough() && !$this->prevHasFormat($prevMotdItem, 'isStrikethrough')) )
+            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->isStrikethrough()) || ($motdItem->isStrikethrough() && !$this->prevHasFormat($prevMotdItem, 'isStrikethrough')) )
                 $_item .= $this->symbol . 'm';
-            if (($motdItem->isReset() && $motdItem->isUnderlined()) || ($motdItem->isUnderlined() && !$this->prevHasFormat($prevMotdItem, 'isUnderlined')))
+            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->isUnderlined()) || ($motdItem->isUnderlined() && !$this->prevHasFormat($prevMotdItem, 'isUnderlined')))
                 $_item .= $this->symbol . 'n';
-            if (($motdItem->isReset() && $motdItem->isItalic()) || ($motdItem->isItalic() && !$this->prevHasFormat($prevMotdItem, 'isItalic')))
+            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->isItalic()) || ($motdItem->isItalic() && !$this->prevHasFormat($prevMotdItem, 'isItalic')))
                 $_item .= $this->symbol . 'o';
 
             if  ($motdItem->getText())
