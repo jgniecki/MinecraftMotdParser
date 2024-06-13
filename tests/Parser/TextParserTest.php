@@ -32,6 +32,32 @@ class TextParserTest extends TestCase
         $this->assertEquals("b", $item2->getColor());
     }
 
+    public function testParseWithCustomSymbol()
+    {
+        $data = "A &l&fMine&4craft &rServer";
+        $collection = new MotdItemCollection();
+        $parser = new TextParser(null, null, "&");
+        $result = $parser->parse($data, $collection);
+
+        $this->assertCount(4, $result);
+        $item1 = $result->get(0);
+        $this->assertEquals("A ", $item1->getText());
+
+        $item2 = $result->get(1);
+        $this->assertEquals("Mine", $item2->getText());
+        $this->assertEquals("f", $item2->getColor());
+        $this->assertTrue($item2->isBold());
+
+        $item3 = $result->get(2);
+        $this->assertEquals("craft ", $item3->getText());
+        $this->assertEquals("4", $item3->getColor());
+        $this->assertTrue($item3->isBold());
+
+        $item4 = $result->get(3);
+        $this->assertEquals("Server", $item4->getText());
+        $this->assertTrue($item4->isReset());
+    }
+
     public function testParseWithNewline()
     {
         $data = "§aHello\n§bWorld";
