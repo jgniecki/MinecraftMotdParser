@@ -14,6 +14,7 @@ composer require dev-lancer/minecraft-motd-parser
 ## Parsing
 
 ### Usage TextParser
+To parse a text-based MOTD using custom formatting and colors:
 ```php
 $formatCollection = \DevLancer\MinecraftMotdParser\FormatCollection::generate();
 $colorCollection  = \DevLancer\MinecraftMotdParser\ColorCollection::generate();
@@ -24,6 +25,7 @@ $motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\M
 ```
 
 ### Usage ArrayParser
+To parse a structured array-based MOTD:
 ```php
 $colorCollection  = \DevLancer\MinecraftMotdParser\ColorCollection::generate();
 $parser = new \DevLancer\MinecraftMotdParser\Parser\ArrayParser($colorCollection);
@@ -53,6 +55,7 @@ $motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\M
 ## Generation
 
 ### MotdItemCollection
+Example of creating a MotdItemCollection:
 ```php
 $parser = new \DevLancer\MinecraftMotdParser\Parser\TextParser();
 $motd = "A &l&fMine&4craft &rServer";
@@ -60,27 +63,35 @@ $motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\M
 ```
 
 ### Usage HtmlGenerator
+To generate HTML from a parsed MOTD:
 ```php
 $generator = new \DevLancer\MinecraftMotdParser\Generator\HtmlGenerator();
+
+// Generate HTML from the MOTD item collection
 echo $generator->generate($motdItemCollection); 
 ```
 
 #### Output
+The output will be:
 ```html
 A <span style="font-weight: bold; color: #FFFFFF;">Mine</span>
 <span style="font-weight: bold; color: #AA0000;">craft </span> Server
 ```
 
 ### Usage RawGenerator
+To generate raw text from a parsed MOTD:
 ```php
-$generator = new \DevLancer\MinecraftMotdParser\Generator\RawGenerator("&");
+$generator = new \DevLancer\MinecraftMotdParser\Generator\RawGenerator("§");
+// Generate raw text from the MOTD item collection
 echo $generator->generate($motdItemCollection); 
-//output: A &f&lMine&4craft &rServer
+//output: A §f§lMine§4craft §rServer
 ```
 
 ### Usage TextGenerator
+To generate plain text from a parsed MOTD:
 ```php
 $generator = new \DevLancer\MinecraftMotdParser\Generator\TextGenerator();
+// Generate plain text from the MOTD item collection
 echo $generator->generate($motdItemCollection); 
 //output: A Minecraft Server
 ```
@@ -88,6 +99,7 @@ echo $generator->generate($motdItemCollection);
 ## Custom formatter
 
 ### Define new class formatter
+Example of creating a custom bold formatter:
 ```php
 class CustomBoldFormatter implements FormatterInterface
 {
@@ -109,26 +121,33 @@ class CustomBoldFormatter implements FormatterInterface
 ```
 
 ### Usage
+To use the custom formatter:
 ```php
-$formatCollection = new \DevLancer\MinecraftMotdParser\FormatCollection();
+// Create a new format collection
+$formatCollection = \DevLancer\MinecraftMotdParser\FormatCollection::generate();
+
+// and override the default formatter for bold
 $formatCollection->add(new CustomBoldFormatter());
 
+// Create a new MOTD item
 $motdItem = new \DevLancer\MinecraftMotdParser\MotdItem();
 $motdItem->setBold(true);
 $motdItem->setText("Hello World");
 
+// Create a new MOTD item collection and add the MOTD item
 $motdItemCollection = new \DevLancer\MinecraftMotdParser\MotdItemCollection();
 $motdItemCollection->add($motdItem);
 
+// Generate HTML using the custom formatter
 $generator = new \DevLancer\MinecraftMotdParser\Generator\HtmlGenerator($formatCollection);
 echo $generator->generate($motdItemCollection); 
 ```
 
 ### Output
+The output will be:
 ```html
 <b class="CustomBoldFormatter">Hello World</b>
 ```
 
 ## License
-
-[MIT](LICENSE)
+This library is licensed under the [MIT](LICENSE) License.
