@@ -40,8 +40,8 @@ class TextParser implements ParserInterface
             return $collection;
         }
 
-        $regex = "/" . $this->symbol . "([0-9a-fklmnor])(.*?)(?=" . $this->symbol . "[0-9a-fklmnor]|$)/";
-
+        $s = $this->symbol;
+        $regex = "/[^" . $s . "].(?=" . $s . ")|" . $s . "([0-9a-fklmnor])(.*?)(?=" . $s . "[0-9a-fklmnor]|$)/";
         $lines = \preg_split('/\\n/', $data);
         for ($i = 0; $i < \count($lines); $i++) {
             $motdItem = new MotdItem();
@@ -53,9 +53,16 @@ class TextParser implements ParserInterface
 
             $keys   = $output[1];
             $values = $output[2];
+            $other  = $output[0];
 
             foreach ($keys as $id => $key) {
                 $motdItem = ($key == "r")? new MotdItem() : clone $motdItem;
+
+                if (empty($key) && !empty($other[$id])) {
+                    $motdItem->setText($other[$id]);
+                    $collection->add($motdItem);
+                    continue;
+                }
 
                 if ($this->colorCollection->get($key)) {
                     $motdItem->setColor($key);
