@@ -40,7 +40,6 @@ class TextParser implements ParserInterface
             return $collection;
         }
 
-        $motdItem = new MotdItem();
         $regex = "/" . $this->symbol . "([0-9a-fklmnor])(.*?)(?=" . $this->symbol . "[0-9a-fklmnor]|$)/";
 
         $lines = \preg_split('/\\n/', $data);
