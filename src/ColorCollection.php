@@ -43,7 +43,7 @@ class ColorCollection  implements \Countable, \IteratorAggregate
     public function add(ColorFormatterInterface $item): void
     {
         $this->items[$item->getKey()] = $item;
-        $this->alias[$item->getName()] = $item->getKey();
+        $this->alias[$item->getColorName()] = $item->getKey();
     }
 
     /**
@@ -71,8 +71,18 @@ class ColorCollection  implements \Countable, \IteratorAggregate
 
         if ($item) {
             unset($this->items[$item->getKey()]);
-            unset($this->alias[$item->getName()]);
+            unset($this->alias[$item->getColorName()]);
         }
+    }
+
+    public function getByColor(string $color): ?ColorFormatterInterface
+    {
+        foreach ($this->items as $item) {
+            if ($item->getColor() === $color)
+                return $item;
+        }
+
+        return null;
     }
 
     public static function generate(): self

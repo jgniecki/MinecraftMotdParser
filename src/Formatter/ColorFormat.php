@@ -9,13 +9,13 @@ class ColorFormat implements HtmlFormatterInterface, ColorFormatterInterface
 {
     use FormatTrait;
     private string $key;
-    private string $name;
+    private string $colorName;
     private string $color;
 
-    public function __construct(string $key, string $name, string $color)
+    public function __construct(string $key, string $colorName, string $color)
     {
         $this->key = $key;
-        $this->name = $name;
+        $this->colorName = $colorName;
         $this->color = $color;
     }
 
@@ -26,7 +26,12 @@ class ColorFormat implements HtmlFormatterInterface, ColorFormatterInterface
 
     public function getName(): string
     {
-        return $this->name;
+        return 'color';
+    }
+
+    public function getColorName(): string
+    {
+        return $this->colorName;
     }
 
     public function getStyle(): string

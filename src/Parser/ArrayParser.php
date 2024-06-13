@@ -52,7 +52,10 @@ class ArrayParser implements ParserInterface
             }
 
             if (isset($item['color'])) {
-                $color = $this->colorCollection->get($item['color']);
+                if (strpos($item['color'], '#') === false)
+                    $color = $this->colorCollection->get($item['color']);
+                else
+                    $color = $this->colorCollection->getByColor($item['color']);
                 $color = (!$color)? $item['color'] : $color->getKey();
                 $motdItem->setColor($color);
             }
