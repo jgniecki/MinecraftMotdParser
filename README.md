@@ -58,7 +58,7 @@ $motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\M
 Example of creating a MotdItemCollection:
 ```php
 $parser = new \DevLancer\MinecraftMotdParser\Parser\TextParser();
-$motd = "A &l&fMine&4craft &rServer";
+$motd = "A §l§fMine§4craft §rServer";
 $motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\MotdItemCollection());
 ```
 
