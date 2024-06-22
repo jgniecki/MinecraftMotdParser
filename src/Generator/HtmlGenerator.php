@@ -13,11 +13,18 @@ class HtmlGenerator implements GeneratorInterface
     private FormatCollection $formatCollection;
     private ColorCollection  $colorCollection;
 
+    private $formatNewLine = "%s<br />";
+
 
     public function __construct(?FormatCollection $formatCollection = null, ?ColorCollection  $colorCollection = null)
     {
         $this->formatCollection = $formatCollection ?? FormatCollection::generate();
         $this->colorCollection = $colorCollection ?? ColorCollection::generate();
+    }
+
+    public function setFormatNewLine(string $format): void
+    {
+        $this->formatNewLine = $format;
     }
 
     public function generate(MotdItemCollection $collection): string
@@ -28,7 +35,7 @@ class HtmlGenerator implements GeneratorInterface
                 continue;
 
             if ($motdItem->getText() == "\n") {
-                $result .= "<br />";
+                $result = \sprintf($this->formatNewLine, $result);
                 continue;
             }
 
