@@ -42,10 +42,10 @@ class TextParser implements ParserInterface
 
         $s = $this->symbol;
         $regex = "/[^" . $s . "].(?=" . $s . ")|" . $s . "([0-9a-fklmnor])(.*?)(?=" . $s . "[0-9a-fklmnor]|$)/";
-        $lines = \preg_split('/\\n/', $data);
+        $lines = (array) \preg_split('/\\n/', $data);
         for ($i = 0; $i < \count($lines); $i++) {
             $motdItem = new MotdItem();
-            $line = $lines[$i];
+            $line = (string) $lines[$i];
             \preg_match_all($regex, $line, $output);
 
             if (!isset($output[1]) || !isset($output[2]))
@@ -67,7 +67,11 @@ class TextParser implements ParserInterface
                 if ($this->colorCollection->get($key)) {
                     $motdItem->setColor($key);
                 } else {
-                    $method = 'set' . \ucfirst($this->formatCollection->get($key)->getName());
+                    $formatter = $this->formatCollection->get($key);
+                    if (!$formatter)
+                        continue; //todo nie rozpoznany format
+
+                    $method = 'set' . \ucfirst($formatter->getName());
                     \call_user_func([$motdItem, $method], true);
                 }
 
@@ -88,6 +92,10 @@ class TextParser implements ParserInterface
         return $collection;
     }
 
+    /**
+     * @param string $data
+     * @return bool
+     */
     public function supports($data): bool
     {
         return \is_string($data) && !empty($data);
