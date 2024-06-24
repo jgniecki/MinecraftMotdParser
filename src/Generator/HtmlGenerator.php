@@ -13,7 +13,7 @@ class HtmlGenerator implements GeneratorInterface
     private FormatCollection $formatCollection;
     private ColorCollection  $colorCollection;
 
-    private $formatNewLine = "%s<br />";
+    private string $formatNewLine = "%s<br />";
 
 
     public function __construct(?FormatCollection $formatCollection = null, ?ColorCollection  $colorCollection = null)
@@ -44,7 +44,7 @@ class HtmlGenerator implements GeneratorInterface
 
             foreach ($this->formatCollection as $format) {
                 $method = "is" . \ucfirst($format->getName());
-                if (\call_user_func_array([$motdItem, $method], []) === false)
+                if (\call_user_func([$motdItem, $method]) === false)
                     continue;
 
                 if ($format instanceof HtmlFormatterInterface) {
@@ -59,6 +59,9 @@ class HtmlGenerator implements GeneratorInterface
                     $value = \sprintf("<span style='color: %s;'>%s</span>", $motdItem->getColor(), $value);
                 } else {
                     $color = $this->colorCollection->get($motdItem->getColor());
+                    if (!$color)
+                        continue;
+
                     if ($color instanceof HtmlFormatterInterface) {
                         $tags[$color->getTag()][] = $color->getStyle();
                     } else {
