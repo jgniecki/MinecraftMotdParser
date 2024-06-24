@@ -6,9 +6,19 @@ use ArrayIterator;
 use DevLancer\MinecraftMotdParser\Contracts\ColorFormatterInterface;
 use DevLancer\MinecraftMotdParser\Formatter\ColorFormat;
 
+/**
+ * @implements \IteratorAggregate<string, ColorFormatterInterface>
+ */
 class ColorCollection  implements \Countable, \IteratorAggregate
 {
+    /**
+     * @var array<string, ColorFormatterInterface>
+     */
     private array $items = [];
+
+    /**
+     * @var array<string, string>
+     */
     private array $alias = [];
 
     /**
