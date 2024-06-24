@@ -5,6 +5,10 @@ namespace DevLancer\MinecraftMotdParser;
 use ArrayIterator;
 use DevLancer\MinecraftMotdParser\Contracts\MotdItemInterface;
 
+
+/**
+ * @implements \IteratorAggregate<int, MotdItemInterface>
+ */
 class MotdItemCollection implements \Countable, \IteratorAggregate
 {
     /**
@@ -83,8 +87,8 @@ class MotdItemCollection implements \Countable, \IteratorAggregate
             for ($i = 1; $i < $this->count(); $i++) {
                 $left = $this->get($i-1);
                 $right = $this->get($i);
-                if ($this->compareItem($left, $right) && $left->getText() != "\n" && $right->getText() != "\n") {
-                    $this->get($i-1)->setText($left->getText() . $right->getText());
+                if ($left && $right && $this->compareItem($left, $right) && $left->getText() != "\n" && $right->getText() != "\n") {
+                    $left->setText($left->getText() . $right->getText());
                     $this->remove($i);
                     $i++;
                 }
@@ -108,8 +112,8 @@ class MotdItemCollection implements \Countable, \IteratorAggregate
         $motdItemLeft = clone $motdItemLeft;
         $motdItemRight = clone $motdItemRight;
 
-        $motdItemLeft->setText(null);
-        $motdItemRight->setText(null);
+        $motdItemLeft->setText("");
+        $motdItemRight->setText("");
 
         return $motdItemLeft == $motdItemRight;
     }
