@@ -37,7 +37,7 @@ class ArrayParser implements ParserInterface
         return $this->list;
     }
 
-    private function generate(array $data, MotdItemInterface $parent)
+    private function generate(array $data, MotdItemInterface $parent): void
     {
         foreach ($data as $item) {
             if (empty($item))
@@ -98,6 +98,10 @@ class ArrayParser implements ParserInterface
         }
     }
 
+    /**
+     * @param array $data
+     * @return bool
+     */
     public function supports($data): bool
     {
         return \is_array($data) && !empty($data);
