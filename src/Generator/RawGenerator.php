@@ -20,6 +20,9 @@ class RawGenerator implements GeneratorInterface
 
         for ($i = 0, $iMax = count($collection); $i < $iMax; $i++) {
             $motdItem = $collection->get($i);
+            if (!$motdItem)
+                continue;
+
             $_item = "";
 
             $prevMotdItem = $collection->get($i - 1);
