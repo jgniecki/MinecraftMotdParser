@@ -12,5 +12,10 @@ interface ParserInterface
      * @return MotdItemCollection
      */
     public function parse($data, MotdItemCollection $collection): MotdItemCollection;
+
+    /**
+     * @param mixed $data
+     * @return bool
+     */
     public function supports($data): bool;
 }
