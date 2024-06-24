@@ -40,7 +40,7 @@ class MotdItem implements \JsonSerializable, MotdItemInterface
     }
 
     /**
-     * @param string|null $color
+     * @param string $color
      */
     public function setColor(string $color): void
     {
@@ -143,6 +143,9 @@ class MotdItem implements \JsonSerializable, MotdItemInterface
         $this->reset = $reset;
     }
 
+    /**
+     * @return array<string, string|null|bool>
+     */
     public function jsonSerialize(): array
     {
         return [
