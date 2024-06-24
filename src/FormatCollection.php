@@ -12,12 +12,19 @@ use DevLancer\MinecraftMotdParser\Formatter\ResetFormat;
 use DevLancer\MinecraftMotdParser\Formatter\StrikethroughFormat;
 use DevLancer\MinecraftMotdParser\Formatter\UnderlinedFormat;
 
+/**
+ * @implements \IteratorAggregate<string, FormatterInterface>
+ */
 class FormatCollection  implements \Countable, \IteratorAggregate
 {
     /**
-     * @var FormatterInterface[] $items;
+     * @var array<string, FormatterInterface>
      */
     private array $items = [];
+
+    /**
+     * @var array<string, string>
+     */
     private array $alias = [];
 
     /**
