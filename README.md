@@ -54,6 +54,30 @@ $motd = [
 $motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\Collection\MotdItemCollection());
 ```
 
+### Merging Similar Items
+The mergeSimilarItem() method in the MotdItemCollection class merges adjacent MotdItem objects with the same formatting and color. This optimization helps to reduce redundancy in the formatting and color codes, making the MOTD more concise.
+
+```php
+$motd = "A &l&fMine&f&lcraft &rServer";
+$motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\Collection\MotdItemCollection());
+
+//Output before
+[
+    ['text': "A "],
+    ['bold': true, 'color': "white", 'text': "Mine"],
+    ['bold': true, 'color': "white", 'text': "craft "],
+    ['reset': true, 'text': "Server"],
+]
+
+$motdItemCollection->mergeSimilarItem();
+//Output after
+[
+    ['text': "A "],
+    ['bold': true, 'color': "white", 'text': "Minecraft "],
+    ['reset': true, 'text': "Server"],
+]
+```
+
 ## Generation
 
 ### MotdItemCollection
