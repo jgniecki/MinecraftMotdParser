@@ -42,23 +42,9 @@ class HtmlGenerator implements GeneratorInterface
             $value = "%s";
             $tags = [];
 
-            //todo Format underlined i strike powinien byc ładwony po kolorze a nie przed
-
-            foreach ($this->formatCollection as $format) {
-                $method = "is" . \ucfirst($format->getName());
-                if (\call_user_func([$motdItem, $method]) === false)
-                    continue;
-
-                if ($format instanceof HtmlFormatterInterface) {
-                    $tags[$format->getTag()][] = $format->getStyle();
-                } else {
-                    $value = \sprintf($value, $format->getFormat());
-                }
-            }
-
             if ($motdItem->getColor()) {
                 if (\strpos($motdItem->getColor(), '#') !== false) {
-                    $value = \sprintf("<span style='color: %s;'>%s</span>", $motdItem->getColor(), $value);
+                    $tags['span'][] = \sprintf("color: %s;", $motdItem->getColor());
                 } else {
                     $color = $this->colorCollection->get($motdItem->getColor());
                     if (!$color)
@@ -69,6 +55,18 @@ class HtmlGenerator implements GeneratorInterface
                     } else {
                         $value = \sprintf($value, $color->getFormat());
                     }
+                }
+            }
+
+            foreach ($this->formatCollection as $format) {
+                $method = "is" . \ucfirst($format->getName());
+                if (\call_user_func([$motdItem, $method]) === false)
+                    continue;
+
+                if ($format instanceof HtmlFormatterInterface) {
+                    $tags[$format->getTag()][] = $format->getStyle();
+                } else {
+                    $value = \sprintf($value, $format->getFormat());
                 }
             }
 

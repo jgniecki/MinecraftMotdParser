@@ -141,7 +141,7 @@ class HtmlGeneratorTest extends TestCase
         $generator = new HtmlGenerator();
         $result = $generator->generate($collection);
 
-        $this->assertEquals('<span style="font-weight: bold; font-style: italic; text-decoration: underline; color: #55FF55;">All Formats Text</span>', $result);
+        $this->assertEquals('<span style="color: #55FF55; font-weight: bold; font-style: italic; text-decoration: underline;">All Formats Text</span>', $result);
     }
 
     public function testGenerateWithThreeItems()
@@ -194,7 +194,7 @@ class HtmlGeneratorTest extends TestCase
         $generator = new HtmlGenerator();
         $result = $generator->generate($collection);
 
-        $this->assertEquals('<span style="font-weight: bold; color: #FF5555;">Hello</span><span style="font-style: italic; color: #FFFF55;">Beautiful</span><span style="text-decoration: underline; color: #55FF55;">World</span>', $result);
+        $this->assertEquals('<span style="color: #FF5555; font-weight: bold;">Hello</span><span style="color: #FFFF55; font-style: italic;">Beautiful</span><span style="color: #55FF55; text-decoration: underline;">World</span>', $result);
     }
 
     public function testGenerateWithLineBreaks()
@@ -263,7 +263,7 @@ class HtmlGeneratorTest extends TestCase
         $generator = new HtmlGenerator();
         $result = $generator->generate($collection);
 
-        $this->assertEquals('<span style="font-weight: bold; color: #FF5555;">Hello</span><br /><span style="font-style: italic; color: #FFFF55;">Beautiful</span><br /><span style="text-decoration: underline; color: #55FF55;">World</span>', $result);
+        $this->assertEquals('<span style="color: #FF5555; font-weight: bold;">Hello</span><br /><span style="color: #FFFF55; font-style: italic;">Beautiful</span><br /><span style="color: #55FF55; text-decoration: underline;">World</span>', $result);
     }
 
     public function testGenerateWithEmptyCollection()
