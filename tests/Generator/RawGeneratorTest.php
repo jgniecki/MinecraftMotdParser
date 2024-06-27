@@ -2,9 +2,9 @@
 
 namespace DevLancer\MinecraftMotdParser\Test\Generator;
 
+use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
 use DevLancer\MinecraftMotdParser\Generator\RawGenerator;
 use DevLancer\MinecraftMotdParser\MotdItem;
-use DevLancer\MinecraftMotdParser\MotdItemCollection;
 use PHPUnit\Framework\TestCase;
 
 class RawGeneratorTest extends TestCase

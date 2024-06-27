@@ -3,10 +3,9 @@
 namespace DevLancer\MinecraftMotdParser\Test\Parser;
 
 
-use PHPUnit\Framework\TestCase;
+use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
 use DevLancer\MinecraftMotdParser\Parser\ArrayParser;
-use DevLancer\MinecraftMotdParser\MotdItemCollection;
-use DevLancer\MinecraftMotdParser\MotdItem;
+use PHPUnit\Framework\TestCase;
 
 class ArrayParserTest extends TestCase
 {

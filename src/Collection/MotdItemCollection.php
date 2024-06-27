@@ -1,15 +1,22 @@
-<?php
+<?php declare(strict_types=1);
+/**
+ * @author Jakub Gniecki <kubuspl@onet.eu>
+ * @copyright
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-namespace DevLancer\MinecraftMotdParser;
+namespace DevLancer\MinecraftMotdParser\Collection;
 
 use ArrayIterator;
+use Countable;
 use DevLancer\MinecraftMotdParser\Contracts\MotdItemInterface;
-
+use IteratorAggregate;
 
 /**
- * @implements \IteratorAggregate<int, MotdItemInterface>
+ * @implements IteratorAggregate<int, MotdItemInterface>
  */
-class MotdItemCollection implements \Countable, \IteratorAggregate
+class MotdItemCollection implements Countable, IteratorAggregate
 {
     /**
      * @var MotdItemInterface[]
@@ -17,11 +24,11 @@ class MotdItemCollection implements \Countable, \IteratorAggregate
     private array $items = [];
 
     /**
-     * @inheritDoc
+     * @return ArrayIterator<int, MotdItemInterface>
      */
-    public function count(): int
+    public function getIterator(): ArrayIterator
     {
-        return \count($this->items);
+        return new ArrayIterator($this->all());
     }
 
     /**
@@ -32,41 +39,9 @@ class MotdItemCollection implements \Countable, \IteratorAggregate
         return $this->items;
     }
 
-    /**
-     * @inheritDoc
-     * @return ArrayIterator<int, MotdItemInterface>
-     */
-    public function getIterator(): ArrayIterator
-    {
-        return new \ArrayIterator($this->all());
-    }
-
-    /**
-     * @param MotdItemInterface $item
-     * @return void
-     */
     public function add(MotdItemInterface $item): void
     {
         $this->items[] = $item;
-    }
-
-    /**
-     * @param int $id
-     * @return MotdItemInterface|null
-     */
-    public function get(int $id): ?MotdItemInterface
-    {
-        return $this->items[$id] ?? null;
-    }
-
-    /**
-     * @param int $id
-     * @return void
-     */
-    public function remove(int $id): void
-    {
-        unset($this->items[$id]);
-        $this->items = \array_values($this->items);
     }
 
     /**
@@ -77,23 +52,31 @@ class MotdItemCollection implements \Countable, \IteratorAggregate
      * The process repeats until no further merges are possible.
      *
      * Note: Items with the text value of "\n" (newline) are not merged.
-     *
-     * @return void
      */
     public function mergeSimilarItem()
     {
         do {
             $old = clone $this;
-            for ($i = 1; $i < $this->count(); $i++) {
-                $left = $this->get($i-1);
+            for ($i = 1; $i < $this->count(); ++$i) {
+                $left = $this->get($i - 1);
                 $right = $this->get($i);
-                if ($left && $right && $this->compareItem($left, $right) && $left->getText() != "\n" && $right->getText() != "\n") {
+                if ($left && $right && $this->compareItem($left, $right) && "\n" != $left->getText() && "\n" != $right->getText()) {
                     $left->setText($left->getText() . $right->getText());
                     $this->remove($i);
-                    $i++;
+                    ++$i;
                 }
             }
-        } while($old != $this);
+        } while ($old != $this);
+    }
+
+    public function count(): int
+    {
+        return count($this->items);
+    }
+
+    public function get(int $id): ?MotdItemInterface
+    {
+        return $this->items[$id] ?? null;
     }
 
     /**
@@ -103,18 +86,25 @@ class MotdItemCollection implements \Countable, \IteratorAggregate
      * It then sets the text property of both cloned objects to null before comparing them.
      * The comparison checks if all other properties of the two objects are equal.
      *
-     * @param MotdItemInterface $motdItemLeft The first MotdItemInterface object to compare.
-     * @param MotdItemInterface $motdItemRight The second MotdItemInterface object to compare.
-     * @return bool Returns true if the modified cloned objects are considered equal, false otherwise.
+     * @param MotdItemInterface $motdItemLeft the first MotdItemInterface object to compare
+     * @param MotdItemInterface $motdItemRight the second MotdItemInterface object to compare
+     *
+     * @return bool returns true if the modified cloned objects are considered equal, false otherwise
      */
     public function compareItem(MotdItemInterface $motdItemLeft, MotdItemInterface $motdItemRight): bool
     {
         $motdItemLeft = clone $motdItemLeft;
         $motdItemRight = clone $motdItemRight;
 
-        $motdItemLeft->setText("");
-        $motdItemRight->setText("");
+        $motdItemLeft->setText('');
+        $motdItemRight->setText('');
 
         return $motdItemLeft == $motdItemRight;
+    }
+
+    public function remove(int $id): void
+    {
+        unset($this->items[$id]);
+        $this->items = array_values($this->items);
     }
 }

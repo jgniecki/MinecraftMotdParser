@@ -15,19 +15,21 @@ composer require dev-lancer/minecraft-motd-parser
 
 ### Usage TextParser
 To parse a text-based MOTD using custom formatting and colors:
+
 ```php
-$formatCollection = \DevLancer\MinecraftMotdParser\FormatCollection::generate();
-$colorCollection  = \DevLancer\MinecraftMotdParser\ColorCollection::generate();
+$formatCollection = \DevLancer\MinecraftMotdParser\Collection\FormatCollection::generate();
+$colorCollection  = \DevLancer\MinecraftMotdParser\Collection\ColorCollection::generate();
 $parser = new \DevLancer\MinecraftMotdParser\Parser\TextParser($formatCollection, $colorCollection, '&');
 
 $motd = "A &l&fMine&4craft &rServer";
-$motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\MotdItemCollection());
+$motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\Collection\MotdItemCollection());
 ```
 
 ### Usage ArrayParser
 To parse a structured array-based MOTD:
+
 ```php
-$colorCollection  = \DevLancer\MinecraftMotdParser\ColorCollection::generate();
+$colorCollection  = \DevLancer\MinecraftMotdParser\Collection\ColorCollection::generate();
 $parser = new \DevLancer\MinecraftMotdParser\Parser\ArrayParser($colorCollection);
 
 $motd = [
@@ -49,17 +51,18 @@ $motd = [
         "text" => "Server"
     ]
 ];
-$motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\MotdItemCollection());
+$motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\Collection\MotdItemCollection());
 ```
 
 ## Generation
 
 ### MotdItemCollection
 Example of creating a MotdItemCollection:
+
 ```php
 $parser = new \DevLancer\MinecraftMotdParser\Parser\TextParser();
 $motd = "A §l§fMine§4craft §rServer";
-$motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\MotdItemCollection());
+$motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\Collection\MotdItemCollection());
 ```
 
 ### Usage HtmlGenerator
@@ -122,9 +125,10 @@ class CustomBoldFormatter implements FormatterInterface
 
 ### Usage
 To use the custom formatter:
+
 ```php
 // Create a new format collection
-$formatCollection = \DevLancer\MinecraftMotdParser\FormatCollection::generate();
+$formatCollection = \DevLancer\MinecraftMotdParser\Collection\FormatCollection::generate();
 
 // and override the default formatter for bold
 $formatCollection->add(new CustomBoldFormatter());
@@ -135,7 +139,7 @@ $motdItem->setBold(true);
 $motdItem->setText("Hello World");
 
 // Create a new MOTD item collection and add the MOTD item
-$motdItemCollection = new \DevLancer\MinecraftMotdParser\MotdItemCollection();
+$motdItemCollection = new \DevLancer\MinecraftMotdParser\Collection\MotdItemCollection();
 $motdItemCollection->add($motdItem);
 
 // Generate HTML using the custom formatter

@@ -1,4 +1,10 @@
-<?php
+<?php declare(strict_types=1);
+/**
+ * @author Jakub Gniecki <kubuspl@onet.eu>
+ * @copyright
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace DevLancer\MinecraftMotdParser\Formatter;
 
@@ -8,6 +14,7 @@ use DevLancer\MinecraftMotdParser\Contracts\HtmlFormatterInterface;
 class ColorFormat implements HtmlFormatterInterface, ColorFormatterInterface
 {
     use FormatTrait;
+
     private string $key;
     private string $colorName;
     private string $color;
@@ -39,13 +46,13 @@ class ColorFormat implements HtmlFormatterInterface, ColorFormatterInterface
         return 'color: ' . $this->getColor() . ';';
     }
 
-    public function getTag(): string
-    {
-        return 'span';
-    }
-
     public function getColor(): string
     {
         return $this->color;
+    }
+
+    public function getTag(): string
+    {
+        return 'span';
     }
 }

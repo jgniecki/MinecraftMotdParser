@@ -2,7 +2,7 @@
 
 namespace DevLancer\MinecraftMotdParser\Test\Parser;
 
-use DevLancer\MinecraftMotdParser\MotdItemCollection;
+use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
 use DevLancer\MinecraftMotdParser\Parser\TextParser;
 use PHPUnit\Framework\TestCase;
 

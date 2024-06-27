@@ -2,9 +2,9 @@
 
 namespace DevLancer\MinecraftMotdParser\Test\Generator;
 
+use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
 use DevLancer\MinecraftMotdParser\Generator\TextGenerator;
 use DevLancer\MinecraftMotdParser\MotdItem;
-use DevLancer\MinecraftMotdParser\MotdItemCollection;
 use PHPUnit\Framework\TestCase;
 
 class TextGeneratorTest extends TestCase

@@ -1,9 +1,9 @@
 <?php
 
-namespace DevLancer\MinecraftMotdParser\Test;
+namespace DevLancer\MinecraftMotdParser\Test\Collection;
 
+use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
 use DevLancer\MinecraftMotdParser\MotdItem;
-use DevLancer\MinecraftMotdParser\MotdItemCollection;
 use PHPUnit\Framework\TestCase;
 
 class MotdItemCollectionTest extends TestCase
