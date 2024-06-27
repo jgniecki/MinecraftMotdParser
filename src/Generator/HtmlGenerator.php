@@ -42,6 +42,8 @@ class HtmlGenerator implements GeneratorInterface
             $value = "%s";
             $tags = [];
 
+            //todo Format underlined i strike powinien byc ładwony po kolorze a nie przed
+
             foreach ($this->formatCollection as $format) {
                 $method = "is" . \ucfirst($format->getName());
                 if (\call_user_func([$motdItem, $method]) === false)
