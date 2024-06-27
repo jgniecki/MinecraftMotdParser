@@ -13,13 +13,32 @@ class TextParser implements ParserInterface
     private string $symbol;
     private FormatCollection $formatCollection;
     private ColorCollection  $colorCollection;
+    private bool $strictFormat;
 
 
-    public function __construct(?FormatCollection $formatCollection = null, ?ColorCollection  $colorCollection = null, string $symbol = "§")
+    public function __construct(?FormatCollection $formatCollection = null, ?ColorCollection  $colorCollection = null, string $symbol = "§", bool $strictFormat = false)
     {
         $this->symbol = $symbol;
         $this->formatCollection = $formatCollection ?? FormatCollection::generate();
         $this->colorCollection = $colorCollection ?? ColorCollection::generate();
+        $this->strictFormat = $strictFormat;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isStrictFormat(): bool
+    {
+        return $this->strictFormat;
+    }
+
+    /**
+     * @param bool $strictFormat
+     * @return void
+     */
+    public function setStrictFormat(bool $strictFormat): void
+    {
+        $this->strictFormat = $strictFormat;
     }
 
     /**
@@ -40,29 +59,39 @@ class TextParser implements ParserInterface
             return $collection;
         }
 
-        $s = $this->symbol;
-        $regex = "/[^" . $s . "].(?=" . $s . ")|" . $s . "([0-9a-fklmnor])(.*?)(?=" . $s . "[0-9a-fklmnor]|$)/";
+
+        $strictFormat = ($this->strictFormat)? "" : "A-FKLMNOR";
+
+        $regex = sprintf("/%s[0-9a-fklmnor%s]|[^%s]+/", $this->symbol, $strictFormat, $this->symbol);
+        $regexKey = sprintf("/^%s([0-9a-fklmnor%s])$/", $this->symbol, $strictFormat);
         $lines = (array) \preg_split('/\\n/', $data);
         for ($i = 0; $i < \count($lines); $i++) {
             $motdItem = new MotdItem();
             $line = (string) $lines[$i];
             \preg_match_all($regex, $line, $output);
 
-            if (!isset($output[1]) || !isset($output[2]))
+            if (empty($output[0]))
                 continue;
 
-            $keys   = $output[1];
-            $values = $output[2];
-            $other  = $output[0];
+            $values = $output[0];
 
-            foreach ($keys as $id => $key) {
+
+            foreach ($values as $value) {
+                preg_match($regexKey, $value, $match);
+                $key = $match[1] ?? null;
                 $motdItem = ($key == "r")? new MotdItem() : clone $motdItem;
 
-                if (empty($key) && !empty($other[$id])) {
-                    $motdItem->setText($other[$id]);
+                if ($key === null) {
+                    if ($value != "0" && empty($value))
+                        continue;
+
+                    $motdItem->setText($value);
                     $collection->add($motdItem);
                     continue;
                 }
+
+                if ($motdItem->isReset())
+                    $motdItem->setReset(false);
 
                 if ($this->colorCollection->get($key)) {
                     $motdItem->setColor($key);
@@ -73,13 +102,6 @@ class TextParser implements ParserInterface
 
                     $method = 'set' . \ucfirst($formatter->getName());
                     \call_user_func([$motdItem, $method], true);
-                }
-
-                if (!empty($values[$id])) {
-                    $motdItem->setText($values[$id]);
-                    $collection->add($motdItem);
-                    if ($key == "r")
-                        $motdItem = new MotdItem();
                 }
             }
             if ($i+1 < \count($lines)) {
