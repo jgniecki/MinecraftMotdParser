@@ -103,6 +103,15 @@ class TextParserTest extends TestCase
         $this->assertNull($item2->getColor());
     }
 
+    public function testParseWithOnlyFormat()
+    {
+        $data = "§0§0";
+        $collection = new MotdItemCollection();
+        $result = $this->parser->parse($data, $collection);
+
+        $this->assertCount(0, $result);
+    }
+
     public function testSupportsWithValidString()
     {
         $this->assertTrue($this->parser->supports("valid string"));
