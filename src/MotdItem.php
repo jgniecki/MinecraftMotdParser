@@ -13,7 +13,7 @@ use JsonSerializable;
 
 class MotdItem implements JsonSerializable, MotdItemInterface
 {
-    public ?string $text = null;
+    private ?string $text = null;
     private ?string $color = null;
     private bool $obfuscated = false;
     private bool $bold = false;
