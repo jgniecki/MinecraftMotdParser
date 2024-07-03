@@ -15,7 +15,8 @@
         "php": ">=7.4",
         "ext-mbstring": "*",
         "ext-json": "*",
-        "ext-iconv": "*"
+        "ext-iconv": "*",
+        "symfony/polyfill-php80": "^1.30"
     },
     "autoload": {
         "psr-4": {
