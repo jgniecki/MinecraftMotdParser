@@ -8,16 +8,22 @@
 
 namespace DevLancer\MinecraftMotdParser\Generator;
 
+use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
+use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
 use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
 use DevLancer\MinecraftMotdParser\Contracts\GeneratorInterface;
 use DevLancer\MinecraftMotdParser\Contracts\MotdItemInterface;
 
 class RawGenerator implements GeneratorInterface
 {
+    private FormatCollection $formatCollection;
+    private ColorCollection $colorCollection;
     private string $symbol;
 
-    public function __construct(string $symbol = '§')
+    public function __construct(?FormatCollection $formatCollection = null, ?ColorCollection $colorCollection = null, string $symbol = '§')
     {
+        $this->formatCollection = $formatCollection ?? FormatCollection::generate();
+        $this->colorCollection = $colorCollection ?? ColorCollection::generate();
         $this->symbol = $symbol;
     }
 
@@ -33,37 +39,33 @@ class RawGenerator implements GeneratorInterface
 
             $_item = '';
             $prevMotdItem = $collection->get($i - 1);
-            $hasConflictFormat = false;
+            $hasReset = false;
             if (!$motdItem->isReset() && $prevMotdItem && $this->hasConflictFormat($prevMotdItem, $motdItem)) {
                 $_item .= $this->symbol . 'r';
-                $hasConflictFormat = true;
+                $hasReset = true;
             }
 
             if ($motdItem->isReset()) {
                 $_item .= $this->symbol . 'r';
+                $hasReset = true;
             }
 
-            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->getColor()) || ($motdItem->getColor() && !$this->prevHasColor($prevMotdItem, $motdItem->getColor()))) {
+            if (($hasReset && $motdItem->getColor()) || ($motdItem->getColor() && !$this->prevHasColor($prevMotdItem, $motdItem->getColor()))) {
                 $color = $motdItem->getColor();
-                if (false === strpos($color, '#')) {
-                    $_item .= $this->symbol . $motdItem->getColor();
+                if (false === str_contains($color, '#')) {
+                    $_item .= $this->symbol . $this->colorCollection->get($motdItem->getColor())->getKey();
                 }
             }
 
-            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->isObfuscated()) || ($motdItem->isObfuscated() && !$this->prevHasFormat($prevMotdItem, 'isObfuscated'))) {
-                $_item .= $this->symbol . 'k';
-            }
-            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->isBold()) || ($motdItem->isBold() && !$this->prevHasFormat($prevMotdItem, 'isBold'))) {
-                $_item .= $this->symbol . 'l';
-            }
-            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->isStrikethrough()) || ($motdItem->isStrikethrough() && !$this->prevHasFormat($prevMotdItem, 'isStrikethrough'))) {
-                $_item .= $this->symbol . 'm';
-            }
-            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->isUnderlined()) || ($motdItem->isUnderlined() && !$this->prevHasFormat($prevMotdItem, 'isUnderlined'))) {
-                $_item .= $this->symbol . 'n';
-            }
-            if ((($motdItem->isReset() || $hasConflictFormat) && $motdItem->isItalic()) || ($motdItem->isItalic() && !$this->prevHasFormat($prevMotdItem, 'isItalic'))) {
-                $_item .= $this->symbol . 'o';
+            foreach ($this->formatCollection as $format) {
+                if ($format->getKey() == 'r') {
+                    continue;
+                }
+
+                $method = 'is' . ucfirst($format->getName());
+                if (($hasReset && $motdItem->{$method}()) || ($motdItem->{$method}() && !$this->prevHasFormat($prevMotdItem, $method))) {
+                    $_item .= $this->symbol . $format->getKey();
+                }
             }
 
             if ($motdItem->getText()) {
@@ -85,24 +87,15 @@ class RawGenerator implements GeneratorInterface
             return false;
         }
 
-        if ($motdItemLeft->isBold() != $motdItemRight->isBold() && $motdItemLeft->isBold()) {
-            return true;
-        }
+        foreach ($this->formatCollection as $format) {
+            if ($format->getKey() == 'r') {
+                continue;
+            }
 
-        if ($motdItemLeft->isItalic() != $motdItemRight->isItalic() && $motdItemLeft->isItalic()) {
-            return true;
-        }
-
-        if ($motdItemLeft->isObfuscated() != $motdItemRight->isObfuscated() && $motdItemLeft->isObfuscated()) {
-            return true;
-        }
-
-        if ($motdItemLeft->isStrikethrough() != $motdItemRight->isStrikethrough() && $motdItemLeft->isStrikethrough()) {
-            return true;
-        }
-
-        if ($motdItemLeft->isUnderlined() != $motdItemRight->isUnderlined() && $motdItemLeft->isUnderlined()) {
-            return true;
+            $method = 'is' . ucfirst($format->getName());
+            if ($motdItemLeft->{$method}() != $motdItemRight->{$method}() && $motdItemLeft->{$method}()) {
+                return true;
+            }
         }
 
         return false;
