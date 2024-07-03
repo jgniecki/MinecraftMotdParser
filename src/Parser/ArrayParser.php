@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 /**
  * @author Jakub Gniecki <kubuspl@onet.eu>
  * @copyright
@@ -9,6 +11,7 @@
 namespace DevLancer\MinecraftMotdParser\Parser;
 
 use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
+use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
 use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
 use DevLancer\MinecraftMotdParser\Contracts\MotdItemInterface;
 use DevLancer\MinecraftMotdParser\Contracts\ParserInterface;
@@ -19,10 +22,12 @@ class ArrayParser implements ParserInterface
 {
     private ?MotdItemCollection $list = null;
     private ColorCollection $colorCollection;
+    private FormatCollection $formatCollection;
 
-    public function __construct(?ColorCollection $colorCollection = null)
+    public function __construct(?FormatCollection $formatCollection = null, ?ColorCollection $colorCollection = null)
     {
         $this->colorCollection = $colorCollection ?? ColorCollection::generate();
+        $this->formatCollection = $formatCollection ?? FormatCollection::generate();
     }
 
     private function generate(array $data, MotdItemInterface $parent): void
@@ -42,7 +47,7 @@ class ArrayParser implements ParserInterface
             }
 
             if (isset($item['color'])) {
-                if (false === strpos($item['color'], '#')) {
+                if (false === str_contains($item['color'], '#')) {
                     $color = $this->colorCollection->get($item['color']);
                 } else {
                     $color = $this->colorCollection->getByColor($item['color']);
@@ -50,28 +55,15 @@ class ArrayParser implements ParserInterface
                 $color = (!$color) ? $item['color'] : $color->getKey();
                 $motdItem->setColor($color);
             }
-            if (isset($item['bold'])) {
-                $motdItem->setBold((bool)$item['bold']);
-            }
 
-            if (isset($item['underlined'])) {
-                $motdItem->setUnderlined((bool)$item['underlined']);
-            }
+            foreach ($this->formatCollection->all() as $format) {
+                $name = $format->getName();
+                if (!isset($item[$name])) {
+                    continue;
+                }
 
-            if (isset($item['strikethrough'])) {
-                $motdItem->setStrikethrough((bool)$item['strikethrough']);
-            }
-
-            if (isset($item['italic'])) {
-                $motdItem->setItalic((bool)$item['italic']);
-            }
-
-            if (isset($item['obfuscated'])) {
-                $motdItem->setObfuscated((bool)$item['obfuscated']);
-            }
-
-            if (isset($item['reset'])) {
-                $motdItem->setReset((bool)$item['reset']);
+                $method = "set" . ucfirst($name);
+                call_user_func([$motdItem, $method], (bool)$item[$name]);
             }
 
             if (isset($item['text'])) {
