@@ -20,20 +20,31 @@ class ArrayParserTest extends TestCase
     {
         $data = [
             ['text' => 'Hello', 'color' => 'red'],
-            ['text' => 'World', 'color' => 'blue']
+            ['text' => 'World', 'color' => 'blue', 'bold' => true, 'italic' => true, 'reset' => false],
+            ['text' => '!', 'bold' => true],
         ];
         $collection = new MotdItemCollection();
         $result = $this->parser->parse($data, $collection);
 
-        $this->assertCount(2, $result);
+        $this->assertCount(3, $result);
 
-        $item1 = $result->all()[0];
-        $this->assertEquals('Hello', $item1->getText());
-        $this->assertEquals('c', $item1->getColor());
+        $item = $result->get(0);
+        $this->assertEquals('Hello', $item->getText());
+        $this->assertEquals('c', $item->getColor());
 
-        $item2 = $result->all()[1];
-        $this->assertEquals('World', $item2->getText());
-        $this->assertEquals('9', $item2->getColor());
+        $item = $result->get(1);
+        $this->assertEquals('World', $item->getText());
+        $this->assertEquals('9', $item->getColor());
+        $this->assertTrue($item->isBold());
+        $this->assertTrue($item->isItalic());
+        $this->assertFalse($item->isReset());
+
+        $item = $result->get(2);
+        $this->assertEquals('!', $item->getText());
+        $this->assertNull($item->getColor());
+        $this->assertTrue($item->isBold());
+        $this->assertFalse($item->isItalic());
+        $this->assertFalse($item->isReset());
     }
 
     public function testParseWithInvalidData()
