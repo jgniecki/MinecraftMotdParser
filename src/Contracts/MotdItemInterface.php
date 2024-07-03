@@ -12,9 +12,9 @@ namespace DevLancer\MinecraftMotdParser\Contracts;
 
 interface MotdItemInterface
 {
-//    public function getText(): ?string;
-//
-//    public function setText(string $text): void;
+    public function getText(): ?string;
+
+    public function setText(string $text): void;
 
     public function getColor(): ?string;
 
