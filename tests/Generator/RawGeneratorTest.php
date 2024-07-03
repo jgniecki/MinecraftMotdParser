@@ -39,7 +39,7 @@ class RawGeneratorTest extends TestCase
         $collection = new MotdItemCollection();
         $collection->add($motdItem);
 
-        $generator = new RawGenerator('$');
+        $generator = new RawGenerator(null, null, '$');
         $result = $generator->generate($collection);
 
         $this->assertEquals('$r$aWorld', $result);
