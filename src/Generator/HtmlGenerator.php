@@ -45,7 +45,7 @@ class HtmlGenerator implements GeneratorInterface
             $tags = [];
 
             if ($motdItem->getColor()) {
-                if (false !== strpos($motdItem->getColor(), '#')) {
+                if (str_contains($motdItem->getColor(), '#')) {
                     $tags['span'][] = sprintf('color: %s;', $motdItem->getColor());
                 } else {
                     $color = $this->colorCollection->get($motdItem->getColor());
