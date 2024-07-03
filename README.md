@@ -29,8 +29,9 @@ $motdItemCollection = $parser->parse($motd, new \DevLancer\MinecraftMotdParser\C
 To parse a structured array-based MOTD:
 
 ```php
+$formatCollection = \DevLancer\MinecraftMotdParser\Collection\FormatCollection::generate();
 $colorCollection  = \DevLancer\MinecraftMotdParser\Collection\ColorCollection::generate();
-$parser = new \DevLancer\MinecraftMotdParser\Parser\ArrayParser($colorCollection);
+$parser = new \DevLancer\MinecraftMotdParser\Parser\ArrayParser($formatCollection, $colorCollection);
 
 $motd = [
     [ "text" => "A "],
