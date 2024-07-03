@@ -79,7 +79,7 @@ class TextParser implements ParserInterface
                 $motdItem = ('r' == $key) ? new MotdItem() : clone $motdItem;
 
                 if (null === $key) {
-                    if ('0' != $value && empty($value)) {
+                    if (strlen($value) == 0 && empty($value)) {
                         continue;
                     }
 
@@ -99,7 +99,7 @@ class TextParser implements ParserInterface
                     $formatter = $this->formatCollection->get($key);
                     if (!$formatter) {
                         continue;
-                    } // todo nie rozpoznany format
+                    }
 
                     $method = 'set' . ucfirst($formatter->getName());
                     call_user_func([$motdItem, $method], true);
