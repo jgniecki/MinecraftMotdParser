@@ -46,7 +46,7 @@ class HtmlGenerator implements GeneratorInterface
 
             if ($motdItem->getColor()) {
                 if (str_contains($motdItem->getColor(), '#')) {
-                    $tags['span'][] = sprintf('color: %s;', $motdItem->getColor());
+                    $tags['span'][] = sprintf('color: %s;', $this->escape($motdItem->getColor()));
                 } else {
                     $color = $this->colorCollection->get($motdItem->getColor());
                     if (!$color) {
@@ -77,7 +77,7 @@ class HtmlGenerator implements GeneratorInterface
             foreach ($tags as $tag => $styles) {
                 $value = sprintf('<%s style="%s">%s</%s>', $tag, implode(' ', $styles), $value, $tag);
             }
-            $value = sprintf($value, $motdItem->getText());
+            $value = sprintf($value, $this->escape($motdItem->getText()));
             $result .= $value;
         }
 
@@ -87,5 +87,10 @@ class HtmlGenerator implements GeneratorInterface
     public function setFormatNewLine(string $format): void
     {
         $this->formatNewLine = $format;
+    }
+
+    private function escape(string $text): string
+    {
+        return htmlentities($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 }
