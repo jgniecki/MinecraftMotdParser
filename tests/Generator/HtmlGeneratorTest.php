@@ -275,4 +275,62 @@ class HtmlGeneratorTest extends TestCase
 
         $this->assertEquals('', $result);
     }
+
+    public function testFilterInvalidHexColor()
+    {
+        $collection = new MotdItemCollection();
+
+        $item1 = new MotdItem();
+        $item1->setText('Hello');
+        $item1->setColor('#FF555');
+        $collection->add($item1);
+
+        $item2 = new MotdItem();
+        $item2->setText("\n");
+        $collection->add($item2);
+
+        $item3 = new MotdItem();
+        $item3->setText('Beautiful');
+        $item3->setColor('#800080');
+        $collection->add($item3);
+
+        $item4 = new MotdItem();
+        $item4->setText("\n");
+        $collection->add($item4);
+
+        $item5 = new MotdItem();
+        $item5->setText('World');
+        $item5->setColor('#42');
+        $collection->add($item5);
+
+        $item6 = new MotdItem();
+        $item6->setText('!');
+        $item6->setColor('#42a');
+        $collection->add($item6);
+
+        $generator = new HtmlGenerator();
+        $result = $generator->generate($collection);
+
+        $this->assertEquals('<br /><span style="color: &num;800080;">Beautiful</span><br /><span style="color: &num;42a;">&excl;</span>', $result);
+    }
+
+    public function testEscapeInput()
+    {
+        $collection = new MotdItemCollection();
+
+        $item1 = new MotdItem();
+        $item1->setText('Hover me');
+        $item1->setColor('#000000" onmouseover="javascript:alert(\'XSS when mouse pointer enters the span element\')"');
+        $collection->add($item1);
+
+        $item2 = new MotdItem();
+        $item2->setText('<script>alert("XSS on page load")</script>');
+        $item2->setColor('#800080');
+        $collection->add($item2);
+
+        $generator = new HtmlGenerator();
+        $result = $generator->generate($collection);
+
+        $this->assertEquals('<span style="color: &num;800080;">&lt;script&gt;alert&lpar;&quot;XSS on page load&quot;&rpar;&lt;&sol;script&gt;</span>', $result);
+    }
 }
