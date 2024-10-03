@@ -46,6 +46,11 @@ class HtmlGenerator implements GeneratorInterface
 
             if ($motdItem->getColor()) {
                 if (str_contains($motdItem->getColor(), '#')) {
+                    // Only allow valid hex color codes (without alpha channel), such as #FFF and #000000.
+                    if(!preg_match('/^#(([0-9A-Fa-f]{2}){3}|[0-9A-Fa-f]{3})$/i', $motdItem->getColor())) {
+                        continue;
+                    }
+
                     $tags['span'][] = sprintf('color: %s;', $this->escape($motdItem->getColor()));
                 } else {
                     $color = $this->colorCollection->get($motdItem->getColor());
