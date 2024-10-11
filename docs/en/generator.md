@@ -104,7 +104,7 @@ A &f&lMine&4craft &rServer
 A &f&lMinecraft &rServer
 ```
 
-Since the color `#FDDC5C` was not defined in the collection, it was skipped. To fix this issue, you can add a custom [color formatter](formetter.md#ready-color-formatter-implementation) to the `ColorCollection`.
+Since the color `#FDDC5C` was not defined in the collection, it was skipped. To fix this issue, you can add a custom [color formatter](formetter.md#color-formatter) to the `ColorCollection`.
 
 ```php
 $light_gold = new DevLancer\MinecraftMotdParser\Formatter\ColorFormat('z', 'light_gold', '#FDDC5C');
