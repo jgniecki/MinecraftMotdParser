@@ -171,9 +171,13 @@ $redColor = new ColorFormat(
 ---
 
 ## Kolekcje formatterów
+Należy pamiętać, że każdy formatter powinien mieć unikalny `key` i `name` (w przypadku kolorów `color name`).
+Wyszukując element w kolekcji za pomocą metody `get()` można robić to za pomocą `key` i `name` a dla kolorów `color name`.
+Kolekcje nie posiadają powtórzeń, gdy istnieje już element od danym kluczu i zostanie dodany nowy o identycznym kluczu istniejący zostanie nadpisany.
+
+
 ### FormatCollection
 Obiekt `DevLancer\MinecraftMotdParser\Collection\FormatCollection` przechowuje kolekcje formatterów (nie uwzględniając kolorów).
-Należy pamiętać, że każdy formatter powinien mieć unikalny klucz i nazwe.
 
 **Generowanie domyślnej kolekcji**
 
@@ -186,7 +190,7 @@ $collection = FormatCollection::generate();
 
 **Manipulowanie kolekcją**
 
-Kolekcją można w dowolny sposób manipulować, tj. dodawać, usuwać jej elementy. Każdy element można wyszukać po nazwie bądź po kluczu formattera.
+Kolekcją można w dowolny sposób manipulować, tj. dodawać, usuwać jej elementy. Każdy element można wyszukać po `name` bądź po `key`.
 ```php
 use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
 
@@ -197,9 +201,35 @@ printr(($bold === $l)); //true
 $collection->remove('l');
 ```
 
+**Nadpisanie formattera**
+
+Załóżmy, że zależy Ci aby nadpisać (bądź dodać) format dla `bold` najprostszym sposobem będzie dziedziczenie istniejącej klasy `BoldFormat`
+i zmienienie tego, na czym Ci zależy, np. wartości dla atrybutu `style`:
+
+```php
+class MyBoldFormat extends BoldFormat
+{
+    public function getStyle(): string
+    {
+        return 'font-weight: 900;';
+    }
+}
+```
+
+Teraz należy dodać nasz formatter do kolekcji, z racji iż w naszej kolekcji po jej wygenerowaniu już istnieje format dla `bold`
+zostanie on nadpisany
+
+```php
+$collection = FormatCollection::generate();
+$collection->get('bold')->getStyle(); //font-weight: bold;
+
+$collection->add(new MyBoldFormat());
+$collection->get('bold')->getStyle(); //font-weight: 900;+
+```
+
 ### ColorCollection
 Obiekt `DevLancer\MinecraftMotdParser\Collection\ColorCollection` przechowuje kolekcje formatterów dla kolorów.
-Należy pamiętać, że każdy formatter powinien mieć unikalny klucz i nazwe koloru.
+Należy pamiętać, że każdy formatter powinien mieć unikalny `key` i `color name`.
 
 **Generowanie domyślnej kolekcji**
 
@@ -212,14 +242,27 @@ $collection = FormatCollection::generate();
 
 Kolekcją można w dowolny sposób manipulować, tj. dodawać, usuwać jej elementy. Każdy element można wyszukać po nazwie koloru bądź po kluczu formattera.
 ```php
-use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
+use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
 
-$collection = FormatCollection::generate();
+$collection = ColorCollection::generate();
 $red = $collection->get('red');
 $c = $collection->get('c');
 printr(($red === $c)); //true
 $collection->remove('red');
 ```
+
+**Dodawanie nowych kolorów**
+
+Najprostszym rozwiązaniem będzie użyć klasy `ColorFormat` która powstała właśnie w tym celu.
+```php
+use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
+use \DevLancer\MinecraftMotdParser\Formatter\ColorFormat;
+
+$collection = ColorCollection::generate();
+$light_gold = new ColorFormat('z', 'light_gold', '#FDDC5C');
+$collection->add($light_gold);
+```
+Gotowe, do kolekcji dodano nowy kolor, `key`: `z` i `color name`: `light_gold`
 
 ---
 ## Lista formatterów
