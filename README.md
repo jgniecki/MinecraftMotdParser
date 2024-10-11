@@ -11,6 +11,14 @@ This library can be installed by issuing the following command:
 ```bash
 composer require dev-lancer/minecraft-motd-parser
 ```
+
+## Documentation
+| Lang                  |
+|:----------------------|
+| [EN](docs/en/home.md) |
+| [PL](docs/pl/home.md) |
+
+
 ## Parsing
 
 ### Usage TextParser
