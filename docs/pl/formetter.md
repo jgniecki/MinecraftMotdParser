@@ -1,10 +1,8 @@
 # Formatter
-Minecraft MOTD ma zdefiniowane klucze (znaki) służące do formatowania tekstu bądź tablice.
-Bibloteka za pomocą formatterów umożliwia definowanie właśnie takich kluczy, 
-oprócz standardowych można zdefinować własne oraz ustawić sposób formatowania tekstu. 
-Jednak należy pamiętać, że w obecnej wersji klasa `TextParser` używa wyrażenia regularnego
-które w zakresie ma standardowe klucze MOTD (`0-9a-fklmnor`), dlatego należy to uwzględnić.
-Klasa `ArrayParser` jest wolna od tego ograniczenia.
+
+Minecraft MOTD wykorzystuje specjalne kody formatowania (znaki lub tablice) do modyfikacji wyglądu tekstu. Nasza biblioteka pozwala na definiowanie własnych formatterów obok standardowych kodów, dzięki czemu można kontrolować sposób formatowania tekstu.
+
+Warto zauważyć, że w obecnej wersji klasy `TextParser` używane są wyrażenia regularne, które ograniczają formatowanie do standardowych kluczy MOTD (`0-9`, `a-f`, `k-o`, `r`). Ograniczenie to nie dotyczy klasy `ArrayParser`.
 
 ## Spis treści
 1. [Tworzenie formattera](formetter.md#tworzenie-formattera)
@@ -15,12 +13,12 @@ Klasa `ArrayParser` jest wolna od tego ograniczenia.
 2. [Kolekcje formatterów](formetter.md#kolekcje-formatterów)
    1. [FormatCollection](formetter.md#formatcollection)
    2. [ColorCollection](formetter.md#colorcollection)
-3. [Lista formatterów](formetter.md#lista-formatterów) 
+3. [Lista formatterów](formetter.md#lista-formatterów)
 
 ## Tworzenie formattera
+
 ### Podstawowy formatter
-Każdy formatter musi implementować interfejs 
-`DevLancer\MinecraftMotdParser\Contracts\FormatterInterface`
+Każdy formatter musi implementować interfejs `DevLancer\MinecraftMotdParser\Contracts\FormatterInterface`:
 ```php
 class ObfuscatedFormat implements FormatterInterface
 {
@@ -41,29 +39,17 @@ class ObfuscatedFormat implements FormatterInterface
 }
 ```
 
-Metoda `getKey()` musi zwracać pojedynczy znak który będzie służył jako klucz formattera, np. k, 1, c i odpowiada to kluczowi MOTD czyli: &k, &1, &c. Należy pamiętać, że każdy klucz powinien być unikalny.
-
-Metoda `getName()` zwraca nazwe formattera która musi być unikalna. Ta wartość może wskazywać na dwa miejsca.
-Pierwszym istotnym przypadkiem na który musi wskazywać to nazwa metody w klasie `MotdItem` (bądź w klasie dziedziczącej) która będzie zwracała jej wartość.
-Metoda musi być poprzedzona prefiksem `is` lub `get` a sam jej zapis musi zachowywać `camelCase`, np. `isObfuscated()`.
-Drugim przypadkiem jest to klucz elementu w tablicy MOTD który jest wymagany wyłącznie dla klasy `ArrayParser`, czyli
-```php
-//...
+- Metoda `getKey()` zwraca pojedynczy znak, który będzie używany jako klucz formattera, np. `k`, `1`, `c`, co odpowiada kluczowi MOTD: `&k`, `&1`, `&c`. Każdy klucz musi być unikalny.
+- `getName()` zwraca unikalną nazwę formattera. Nazwa ta powinna odpowiadać nazwie metody w klasie `MotdItem`, która zwraca jego wartość. Metoda musi być poprzedzona prefiksem `is` lub `get` i zapisana w formacie `camelCase` np. `isObfuscated()`. W przypadku `ArrayParser`, ta nazwa będzie również kluczem w tablicy MOTD:
+    ```php
     'extra' => [
         'obfuscated' => true
     ]
-//...
-```
-
-Metoda `getFormat()` zwraca pattern w jaki sposób ma być sformatowany tekst z użyciem funkcji `sprintf`. 
+    ```
+- `getFormat()` zwraca wzorzec formatowania tekstu używany w funkcji `sprintf`.
 
 ### Generowanie kodu HTML
-Używając klasy `HtmlGenerator` w celu wygenerowania kodu HTML można posłużyć się
-formatterem który implementuje interfejs
-`DevLancer\MinecraftMotdParser\Contracts\HtmlFormatterInterface`
-w tym przypadku do standardowego formattera należy dopisać dwie metody `getStyle()` i `getTag()`.
-Formatter implementujący ten interfejs umożliwia generatorowi wygenerować krótszy kod HTML poprzez grupowanie podobnych elementów na podstawie tagów HTML
-i osadzanie w nich dla atrybutu `style` wartości zaczerpnięte z metody `getStyle()`.
+Aby generować kod HTML, formatter powinien implementować interfejs `DevLancer\MinecraftMotdParser\Contracts\HtmlFormatterInterface`. Dodatkowe metody `getStyle()` i `getTag()` pozwalają na generowanie bardziej zoptymalizowanego kodu HTML:
 ```php
 class BoldFormat implements HtmlFormatterInterface
 {
@@ -94,19 +80,11 @@ class BoldFormat implements HtmlFormatterInterface
 }
 ```
 
-Metoda `getStyle()` musi wzrócić parametr akceptowalny dla atrybutu `style` w HTMLu,
-należy pamiętać o `;` który zakończy tą wartość.
-
-Metoda `getTag()` musi zwrócić tag HTML w którym znajdzie się formatowany tekst.
+- `getStyle()` zwraca atrybuty akceptowane przez styl `style` w HTML.
+- `getTag()` zwraca nazwę tagu HTML, wewnątrz którego zostanie umieszczony formatowany tekst.
 
 ### Kolorowy formatter
-W przypadku gdy chcesz sformatować kolor należy zaimplementować interfejs
-`DevLancer\MinecraftMotdParser\Contracts\ColorFormatterInterface`
-
-Należy pamiętać, że mimo iż `ColorFormatterInterface` implementuje `FormatterInterface`, nie należy
-dodawać go jako element do listy w obiekcie `FormatCollection`, ponieważ metoda `getName()` powinna zwracać wartość `color`
-gdzie w przypadku `FormatCollection` każdy formatter powinien mieć tą wartość unikalną. Dodatkowo dobrą praktyką jest także,
-zaimplementowanie `HtmlFormatterInterface` w celu lepszego formatowania kodu.
+Aby sformatować kolor, implementujemy interfejs `DevLancer\MinecraftMotdParser\Contracts\ColorFormatterInterface`. Należy pamiętać, że chociaż `ColorFormatterInterface` dziedziczy po `FormatterInterface`, nie powinno się go dodawać do `FormatCollection`, ponieważ nazwa zwracana przez `getName()` musi być unikalna dla każdego formattera w tej kolekcji. Dobrą praktyką jest również zaimplementowanie `HtmlFormatterInterface` dla lepszego generowania kodu HTML:
 ```php
 class ColorFormat implements ColorFormatterInterface
 {
@@ -137,56 +115,38 @@ class ColorFormat implements ColorFormatterInterface
 }
 ```
 
-Metoda `getName()`, jak już wcześniej było wspominane wskazuje na klucz w tablicy dlatego powinna zwracać wartość `color`.
-```php
-//...
+- `getName()` musi zwracać wartość `color`, ponieważ jest używana jako klucz w tablicy:
+    ```php
     'extra' => [
         'color' => 'dark_blue'
     ]
-//...
-```
-
-Metoda `getColorName()` zwraca nazwę koloru, wartość ta jest szczególnie ważna w przypadku użycia klasy `ArrayParser` gdzie element o kluczu `color` w tablicy wskazuje właśnie tą wartość. 
-Przykład jest podany powyżej.
-
-Metoda `getColor()` musi zwracać kolor w zapisie HEX.
-
-Metoda `getFormat()` zwraca pattern w jaki sposób będzie formatowany tekst
-
----
+    ```
+- `getColorName()` zwraca nazwę koloru, która jest szczególnie ważna w przypadku użycia klasy `ArrayParser`.
+- `getColor()` zwraca kolor w formacie HEX.
+- `getFormat()` zwraca wzorzec formatowania z kolorem.
 
 ### Gotowa implementacja kolorowego formattera
-Zamiast tworzyć nowego formattera dla koloru, warto użyć już gotowej klasy `ColorFormat`.
-
+Zamiast tworzyć własny formatter dla koloru, możesz użyć gotowej klasy `ColorFormat`:
 ```php
 use DevLancer\MinecraftMotdParser\Formatter\ColorFormat;
 
-$redColor = new ColorFormat(
-    'c',
-    'red',
-    '#FF5555'
-);
+$redColor = new ColorFormat('c', 'red', '#FF5555');
 ```
 
----
-
 ## Kolekcje formatterów
-Należy pamiętać, że każdy formatter powinien mieć unikalny `key` i `name` (w przypadku kolorów `color name`).
-Wyszukując element w kolekcji za pomocą metody `get()` można robić to za pomocą `key` i `name` a dla kolorów `color name`.
-Kolekcje nie posiadają powtórzeń, gdy istnieje już element od danym kluczu i zostanie dodany nowy o identycznym kluczu istniejący zostanie nadpisany.
-
+Każdy formatter powinien mieć unikalny klucz (`key`) i nazwę (`name`), a w przypadku kolorów unikalną nazwę koloru (`color name`).
 
 ### FormatCollection
-Obiekt `DevLancer\MinecraftMotdParser\Collection\FormatCollection` przechowuje kolekcje formatterów (nie uwzględniając kolorów).
+`DevLancer\MinecraftMotdParser\Collection\FormatCollection` przechowuje kolekcje formatterów (z wyłączeniem kolorów).
 
 **Generowanie domyślnej kolekcji**
-
-Klasa `FormatCollection` posiada metode która pozwala wygenerować kolekcje z domyślnymi formatterami ([lista poniżej](formetter.md#lista-formatterów)).
 ```php
 use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
 
 $collection = FormatCollection::generate();
 ```
+
+Kolekcją można dowolnie manipulować — dodawać, usuwać elementy oraz wyszukiwać je po `name` lub `key`.
 
 **Manipulowanie kolekcją**
 
@@ -224,60 +184,40 @@ $collection = FormatCollection::generate();
 $collection->get('bold')->getStyle(); //font-weight: bold;
 
 $collection->add(new MyBoldFormat());
-$collection->get('bold')->getStyle(); //font-weight: 900;+
+$collection->get('bold')->getStyle(); //font-weight: 900;
 ```
 
 ### ColorCollection
-Obiekt `DevLancer\MinecraftMotdParser\Collection\ColorCollection` przechowuje kolekcje formatterów dla kolorów.
-Należy pamiętać, że każdy formatter powinien mieć unikalny `key` i `color name`.
+`DevLancer\MinecraftMotdParser\Collection\ColorCollection` przechowuje kolekcje formatterów dla kolorów.
 
 **Generowanie domyślnej kolekcji**
-
-Klasa `ColorCollection` posiada metode która pozwala wygenerować kolekcje z domyślnymi formatterami dla kolorów ([lista poniżej](formetter.md#lista-formatterów)).
-```php
-use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
-
-$collection = FormatCollection::generate();
-```
-
-Kolekcją można w dowolny sposób manipulować, tj. dodawać, usuwać jej elementy. Każdy element można wyszukać po nazwie koloru bądź po kluczu formattera.
 ```php
 use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
 
 $collection = ColorCollection::generate();
-$red = $collection->get('red');
-$c = $collection->get('c');
-printr(($red === $c)); //true
-$collection->remove('red');
 ```
 
 **Dodawanie nowych kolorów**
-
-Najprostszym rozwiązaniem będzie użyć klasy `ColorFormat` która powstała właśnie w tym celu.
 ```php
-use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
-use \DevLancer\MinecraftMotdParser\Formatter\ColorFormat;
-
-$collection = ColorCollection::generate();
-$light_gold = new ColorFormat('z', 'light_gold', '#FDDC5C');
-$collection->add($light_gold);
+$lightGold = new ColorFormat('z', 'light_gold', '#FDDC5C');
+$collection->add($lightGold);
 ```
-Gotowe, do kolekcji dodano nowy kolor, `key`: `z` i `color name`: `light_gold`
 
 ---
+
 ## Lista formatterów
-Kody formatów oraz ich nazwy są zgodne z podaną listą na stronie [minecraft wiki](https://minecraft.fandom.com/wiki/Formatting_codes)
+Zgodność kodów formatów z listą na stronie [minecraft wiki](https://minecraft.fandom.com/wiki/Formatting_codes):
 
 | Class               | Code | Name          |
 |:--------------------|:-----|:--------------|
-| ObfuscatedFormat    | k    | obfuscated    |
-| BoldFormat          | l    | bold          |
-| StrikethroughFormat | m    | strikethrough |
-| UnderlinedFormat    | n    | underline     |
-| ItalicFormat        | o    | italic        |
-| ResetFormat         | r    | reset         |
+| ObfuscatedFormat     | k    | obfuscated    |
+| BoldFormat           | l    | bold          |
+| StrikethroughFormat  | m    | strikethrough |
+| UnderlinedFormat     | n    | underline     |
+| ItalicFormat         | o    | italic        |
+| ResetFormat          | r    | reset         |
 
-Formattery dla kolorów są tworzone za pomocą klasy `ColorFormat`, lista kolorów:
+Formattery dla kolorów tworzone są za pomocą klasy `ColorFormat`, oto lista dostępnych kolorów:
 
 | Code | Name         |
 |:-----|:-------------|
@@ -298,6 +238,4 @@ Formattery dla kolorów są tworzone za pomocą klasy `ColorFormat`, lista kolor
 | e    | yellow       |
 | f    | white        |
 
-
-
-
+---

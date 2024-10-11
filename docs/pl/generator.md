@@ -1,36 +1,35 @@
 # Generator
-Generator umożliwia na podstawie `MotdItemCollection` oraz [kolekcji formatterów](formetter.md) wygenerowanie w pożądanej postaci Minecraft MOTD.
+Generator umożliwia generowanie treści Minecraft MOTD na podstawie `MotdItemCollection` oraz [kolekcji formatterów](formetter.md), w różnych formatach.
 
 ## Spis treści
-1. [Wprowadzenia](generator.md#wprowadzenie)
-2. [Generator HTMLu](generator.md#generator-htmlu)
+1. [Wprowadzenie](generator.md#wprowadzenie)
+2. [Generator HTML](generator.md#generator-html)
 3. [Generator RAW MOTD](generator.md#generator-raw-motd)
 4. [Generator czystego tekstu MOTD](generator.md#generator-czystego-tekstu-motd)
 
 ## Wprowadzenie
-Zanim zostaną przedstawione sposoby generowania treści, warto zauważyć, że każdy generator implementuje interfejs 
-`DevLancer\MinecraftMotdParser\Collection\MotdItemCollection\GeneratorInterface` dlatego każdy posiada metode `generate` która
-przyjmuje jako argument `MotdItemCollection $collection` ([więcej tutaj](motdcollection.md)), jednym ze sposóbów uzyskania kolekcji
-jest utworzenie jej na podstawie Minecraft MOTD za pomocą [parserów](parser.md), w dalszej częsci dokumentacji będę używał
-zmiennej `$motdItemCollection` która zawiera instancje klasy `MotdItemCollection` której elementy kolecji można przedstawić w sposób:
+Zanim omówimy różne metody generowania treści, warto zauważyć, że każdy generator implementuje interfejs `DevLancer\MinecraftMotdParser\Collection\MotdItemCollection\GeneratorInterface`. W związku z tym, każdy generator posiada metodę `generate`, która przyjmuje jako argument `MotdItemCollection $collection`. Kolekcję `MotdItemCollection` można uzyskać m.in. poprzez parsowanie Minecraft MOTD za pomocą [parserów](parser.md). W tej dokumentacji używamy zmiennej `$motdItemCollection`, która zawiera instancję klasy `MotdItemCollection`. Elementy tej kolekcji mogą wyglądać tak:
+
 ```php
 [
-    ['text': "A "],
-    ['bold': true, 'color': "white", 'text': "Mine"],
-    ['bold': true, 'color': "dark_red", 'text': "craft "],
-    ['reset': true, 'text': "Server"],
+    ['text' => "A "],
+    ['bold' => true, 'color' => "white", 'text' => "Mine"],
+    ['bold' => true, 'color' => "dark_red", 'text' => "craft "],
+    ['reset' => true, 'text' => "Server"],
 ]
 ```
-Jeżeli jeszcze nie wiesz czym jest `FormatCollection` lub `ColorCollection` i jak wykorzystać go w celu formatowania możesz przeczytać o tym zagadnieniu [tutaj](formetter.md).
+
+Jeśli nie jesteś jeszcze zaznajomiony z `FormatCollection` lub `ColorCollection` i chcesz dowiedzieć się, jak używać ich do formatowania, sprawdź szczegóły [tutaj](formetter.md).
 
 ---
 
-## Generator HTMLu
+## Generator HTML
 Generowanie kodu HTML odbywa się za pomocą klasy `DevLancer\MinecraftMotdParser\Generator\HtmlGenerator`.
+
 ```php
 use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
 use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
-use DevLancer\MinecraftMotdParser\Generator\HtmlGenerator
+use DevLancer\MinecraftMotdParser\Generator\HtmlGenerator;
 
 $formatCollection = FormatCollection::generate();
 $colorCollection  = ColorCollection::generate();
@@ -38,21 +37,23 @@ $generator = new HtmlGenerator($formatCollection, $colorCollection);
 
 echo $generator->generate($motdItemCollection); 
 ```
-Warto wspomnieć, że konstruktor przyjmuje opcjonalnie zmienne `$formatCollection` i `$colorCollection`, w przypadku ich braku
-zostaną automatycznie wygenerowane.
+
+Warto zaznaczyć, że konstruktor przyjmuje opcjonalnie `$formatCollection` i `$colorCollection`. W przypadku ich braku zostaną one automatycznie wygenerowane.
 
 #### Wynik
 ```html
 A <span style="font-weight: bold; color: #FFFFFF;">Mine</span>
 <span style="font-weight: bold; color: #AA0000;">craft </span> Server
 ```
-Dodatkowym aspektem tego generatora jest fakt, że może on wyświetlić niestandardowe kolory w zapise HEX który nie znajduje się w kolekcji kolorów.
+
+Dodatkowo, ten generator obsługuje niestandardowe kolory zapisane w formacie HEX, nawet jeśli nie są one zawarte w kolekcji kolorów.
+
 ```php
 [
-    ['text': "A "],
-    ['bold': true, 'color': "white", 'text': "Mine"],
-    ['bold': true, 'color': "#FDDC5C", 'text': "craft "],
-    ['reset': true, 'text': "Server"],
+    ['text' => "A "],
+    ['bold' => true, 'color' => "white", 'text' => "Mine"],
+    ['bold' => true, 'color' => "#FDDC5C", 'text' => "craft "],
+    ['reset' => true, 'text' => "Server"],
 ]
 ```
 
@@ -65,10 +66,9 @@ A <span style="font-weight: bold; color: #FFFFFF;">Mine</span>
 ---
 
 ## Generator RAW MOTD
-Generowanie Minecraft MOTD odbywa się za pomocą klasy `DevLancer\MinecraftMotdParser\Generator\RawGenerator`.
+Do generowania Minecraft MOTD w postaci RAW (surowej) służy klasa `DevLancer\MinecraftMotdParser\Generator\RawGenerator`.
 
-Konstruktor `RawGenerator` w trzecim parametrze przyjmuje znak sekcji, który poprzedza [klucz formattera](formetter.md#podstawowy-formatter)
-domyślnie jest to `§`.
+Konstruktor `RawGenerator` w trzecim parametrze przyjmuje znak sekcji, który poprzedza [klucz formattera](formetter.md#podstawowy-formatter). Domyślnym znakiem jest `§`.
 
 ```php
 use DevLancer\MinecraftMotdParser\Generator\RawGenerator;
@@ -79,6 +79,7 @@ $formatCollection = FormatCollection::generate();
 $colorCollection  = ColorCollection::generate();
 $symbol = "&";
 $generator = new RawGenerator($formatCollection, $colorCollection, $symbol);
+
 echo $generator->generate($motdItemCollection);
 ```
 
@@ -87,14 +88,14 @@ echo $generator->generate($motdItemCollection);
 A &f&lMine&4craft &rServer
 ```
 
-**UWAGA** Jeżeli element w kolekcji `$motdItemCollection` zawiera niestandardowy sposób formatowania np. kolor (nie występuje w kolekcji formatterów), wyłącznie niestandardowe formatowanie zostanie pominięte przy generowaniu treści.
+**Uwaga:** Jeśli element w `$motdItemCollection` zawiera niestandardowy format, np. kolor, który nie występuje w kolekcji formatterów, generator pominie ten element podczas generowania.
 
 ```php
 [
-    ['text': "A "],
-    ['bold': true, 'color': "white", 'text': "Mine"],
-    ['bold': true, 'color': "#FDDC5C", 'text': "craft "],
-    ['reset': true, 'text': "Server"],
+    ['text' => "A "],
+    ['bold' => true, 'color' => "white", 'text' => "Mine"],
+    ['bold' => true, 'color' => "#FDDC5C", 'text' => "craft "],
+    ['reset' => true, 'text' => "Server"],
 ]
 ```
 
@@ -102,11 +103,14 @@ A &f&lMine&4craft &rServer
 ```text
 A &f&lMinecraft &rServer
 ```
-Generator nie posiadał formatu dla koloru: #FDDC5C i go pominął, możesz utworzyć swój [formatter dla koloru](formetter.md#gotowa-implementacja-kolorowego-formattera) i dodać go do kolekcji `ColorCollection` aby rozwiązać ten problem.
+
+Ponieważ kolor `#FDDC5C` nie był zdefiniowany w kolekcji, został pominięty. Aby rozwiązać ten problem, możesz dodać niestandardowy [formatter dla koloru](formetter.md#gotowa-implementacja-kolorowego-formattera) do kolekcji `ColorCollection`.
+
 ```php
 $light_gold = new DevLancer\MinecraftMotdParser\Formatter\ColorFormat('z', 'light_gold', '#FDDC5C');
 $colorCollection->add($light_gold);
 $generator = new RawGenerator($formatCollection, $colorCollection, $symbol);
+
 echo $generator->generate($motdItemCollection);
 ```
 
@@ -118,7 +122,7 @@ A &f&lMine&zcraft &rServer
 ---
 
 ## Generator czystego tekstu MOTD
-Najprostszy generator `DevLancer\MinecraftMotdParser\Generator\TextGenerator` który generuje wyłącznie tekst MOTD.
+Najprostszym sposobem na generowanie samego tekstu MOTD jest użycie klasy `DevLancer\MinecraftMotdParser\Generator\TextGenerator`.
 
 ```php
 use DevLancer\MinecraftMotdParser\Generator\TextGenerator;

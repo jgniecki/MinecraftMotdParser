@@ -1,27 +1,27 @@
-# Parsing
-Parser umożliwia na podstawie dostarczonej treści wygenerować `MotdItemCollection`
+# Parsowanie
+Parser umożliwia generowanie obiektu `MotdItemCollection` na podstawie dostarczonej treści MOTD.
 
 ## Spis treści
-1. [Wprowadzenia](parser.md#wprowadzenie)
+1. [Wprowadzenie](parser.md#wprowadzenie)
 2. [TextParser](parser.md#textparser)
 3. [ArrayParser](parser.md#arrayparser)
 
 ## Wprowadzenie
-Najpopularniejszymi sposobami przedstawiania przez sewery Minecraft Motd jest zapis tekstowy zgodny z zapisem na [minecraft wiki](https://minecraft.fandom.com/wiki/Formatting_codes)
-lub motd zapisany w sposób zgodny z formatem `JSON` w postaci mapy. Oba przypadki są obsługiwane, trzeba jednak pamiętać, że
-w domyślnej konfiguracji nie są analizowane kolory BE bądź niestandardowe sposoby formatowania.
+Serwery Minecraft najczęściej prezentują MOTD w dwóch formatach: w postaci sformatowanego tekstu zgodnego z opisem na [Minecraft Wiki](https://minecraft.fandom.com/wiki/Formatting_codes) lub w formacie `JSON` jako mapa danych. Oba te formaty są obsługiwane przez bibliotekę. Należy jednak pamiętać, że w domyślnej konfiguracji parsery nie obsługują kolorów BE ani niestandardowych metod formatowania.
 
-Jeżeli jeszcze nie wiesz czym jest `FormatCollection` lub `ColorCollection` i jak wykorzystać go w celu formatowania możesz przeczytać o tym zagadnieniu [tutaj](formetter.md).
+Jeśli nie jesteś jeszcze zaznajomiony z pojęciami takimi jak `FormatCollection` lub `ColorCollection` oraz nie wiesz, jak ich używać do formatowania, możesz dowiedzieć się więcej [tutaj](formetter.md).
 
 ---
 
 ## TextParser
-Do analizowania tekstowego motd należy wykorzystać klase `DevLancer\MinecraftMotdParser\Parser\TextParser`.
+Aby analizować MOTD zapisane w formie tekstowej, użyj klasy `DevLancer\MinecraftMotdParser\Parser\TextParser`:
+
 ```php
 use DevLancer\MinecraftMotdParser\Parser\TextParser;
 use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
 use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
 use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
+
 $formatCollection = FormatCollection::generate();
 $colorCollection  = ColorCollection::generate();
 $parser = new TextParser($formatCollection, $colorCollection, '&');
@@ -30,45 +30,51 @@ $motd = "A &l&fMine&fcraft &rServer";
 $motdItemCollection = $parser->parse($motd, new MotdItemCollection());
 ```
 
-Zmienna `$motdItemCollection` przyjęła instancje klasy `MotdItemCollection` i jej elementy można zapisać w sposób:
+Zmienna `$motdItemCollection` zawiera instancję klasy `MotdItemCollection`, której elementy będą miały następującą strukturę:
+
 ```php
 [
-    ['text': "A "],
-    ['bold': true, 'color': "white", 'text': "Mine"],
-    ['bold': true, 'color': "white", 'text': "craft "],
-    ['reset': true, 'text': "Server"],
+    ['text' => "A "],
+    ['bold' => true, 'color' => "white", 'text' => "Mine"],
+    ['bold' => true, 'color' => "white", 'text' => "craft "],
+    ['reset' => true, 'text' => "Server"],
 ]
 ```
 
-Parser poprawnie wykonał swoją pracę, ale zauważ, że elementy
+Parser poprawnie rozpoznaje poszczególne elementy formatujące. Zauważ jednak, że elementy:
+
 ```php
-//...
-    ['bold': true, 'color': "white", 'text': "Mine"],
-    ['bold': true, 'color': "white", 'text': "craft "],
-//...
+    ['bold' => true, 'color' => "white", 'text' => "Mine"],
+    ['bold' => true, 'color' => "white", 'text' => "craft "],
 ```
-są podobne do siebie, różni ich tylko pole `text`, w celu minimalizacji danych możesz te elementy połączyć
+
+są bardzo podobne do siebie i różnią się jedynie wartością tekstu. Aby zminimalizować ilość danych, można połączyć te elementy:
+
 ```php
 $motdItemCollection->mergeSimilarItem();
 ```
-Teraz wynik kolekcji będzie:
+
+Po zastosowaniu tej metody wynikowa kolekcja będzie wyglądała tak:
+
 ```php
 [
-    ['text': "A "],
-    ['bold': true, 'color': "white", 'text': "Minecraft "],
-    ['reset': true, 'text': "Server"],
+    ['text' => "A "],
+    ['bold' => true, 'color' => "white", 'text' => "Minecraft "],
+    ['reset' => true, 'text' => "Server"],
 ]
 ```
 
 ---
 
 ## ArrayParser
-Do analizowania motd w postaci tablicy należy wykorzystać klase `DevLancer\MinecraftMotdParser\Parser\ArrayParser`.
+Aby analizować MOTD w formacie JSON (reprezentowanym jako tablica), należy użyć klasy `DevLancer\MinecraftMotdParser\Parser\ArrayParser`:
+
 ```php
 use DevLancer\MinecraftMotdParser\Parser\ArrayParser;
 use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
 use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
 use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
+
 $formatCollection = FormatCollection::generate();
 $colorCollection  = ColorCollection::generate();
 $parser = new ArrayParser($formatCollection, $colorCollection);
@@ -95,16 +101,17 @@ $motd = [
 $motdItemCollection = $parser->parse($motd, new MotdItemCollection());
 ```
 
-Wynikiem kolekcji będzie:
+Wynikowa kolekcja będzie wyglądać następująco:
+
 ```php
 [
-    ['text': "A "],
-    ['bold': true, 'color': "white", 'text': "Mine"],
-    ['bold': true, 'color': "#FDDC5C", 'text': "craft "],
-    ['reset': true, 'text': "Server"],
+    ['text' => "A "],
+    ['bold' => true, 'color' => "white", 'text' => "Mine"],
+    ['bold' => true, 'color' => "#FDDC5C", 'text' => "craft "],
+    ['reset' => true, 'text' => "Server"],
 ]
 ```
 
-Dodatkowym aspektem tego parsera jest fakt, że może on przyjmować niestandardowe kolory w zapisie HEX,
-kolor `#FDDC5C` zostanie zapisany w elemencie kolekcji, jednak należy pamiętać, że bez dodatkowej konfiguracji tylko
-generator `HtmlGenerator` może wykorzystać ten aspekt w sensowny sposób podczas generowania treści.
+Dodatkową funkcją tego parsera jest obsługa niestandardowych kolorów zapisanych w formacie HEX, jak na przykład `#FDDC5C`. Kolor ten zostanie prawidłowo zapisany w elemencie kolekcji. Należy jednak pamiętać, że bez dodatkowej konfiguracji tylko generator `HtmlGenerator` może sensownie wykorzystać te niestandardowe kolory podczas generowania treści.
+
+---
