@@ -11,14 +11,17 @@ namespace DevLancer\MinecraftMotdParser\Generator;
 use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
 use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
 use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
+use DevLancer\MinecraftMotdParser\Contracts\FormatterInterface;
 use DevLancer\MinecraftMotdParser\Contracts\GeneratorInterface;
 use DevLancer\MinecraftMotdParser\Contracts\HtmlFormatterInterface;
+use DevLancer\MinecraftMotdParser\GetValueMotdItemTrait;
 
 class HtmlGenerator implements GeneratorInterface
 {
+    use GetValueMotdItemTrait;
+
     private FormatCollection $formatCollection;
     private ColorCollection $colorCollection;
-
     private string $formatNewLine = '%s<br />';
 
     public function __construct(?FormatCollection $formatCollection = null, ?ColorCollection $colorCollection = null)
@@ -53,30 +56,21 @@ class HtmlGenerator implements GeneratorInterface
 
                     $tags['span'][] = sprintf('color: %s;', $this->escape($motdItem->getColor()));
                 } else {
-                    $color = $this->colorCollection->get($motdItem->getColor());
-                    if (!$color) {
+                    $formatter = $this->colorCollection->get($motdItem->getColor());
+                    if (!$formatter) {
                         continue;
                     }
 
-                    if ($color instanceof HtmlFormatterInterface) {
-                        $tags[$color->getTag()][] = $color->getStyle();
-                    } else {
-                        $value = sprintf($value, $color->getFormat());
-                    }
+                    $this->format($formatter, $tags, $value);
                 }
             }
 
-            foreach ($this->formatCollection as $format) {
-                $method = 'is' . ucfirst($format->getName());
-                if (false === call_user_func([$motdItem, $method])) {
+            foreach ($this->formatCollection as $formatter) {
+                if (false === $this->getValueMotdItem($formatter->getName(), $motdItem)) {
                     continue;
                 }
 
-                if ($format instanceof HtmlFormatterInterface) {
-                    $tags[$format->getTag()][] = $format->getStyle();
-                } else {
-                    $value = sprintf($value, $format->getFormat());
-                }
+                $this->format($formatter, $tags, $value);
             }
 
             foreach ($tags as $tag => $styles) {
@@ -97,5 +91,14 @@ class HtmlGenerator implements GeneratorInterface
     private function escape(string $text): string
     {
         return htmlentities($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+
+    private function format(FormatterInterface $formatter, array &$tags, string &$value)
+    {
+        if ($formatter instanceof HtmlFormatterInterface) {
+            $tags[$formatter->getTag()][] = $formatter->getStyle();
+        } else {
+            $value = sprintf($value, $formatter->getFormat());
+        }
     }
 }
