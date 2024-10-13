@@ -13,9 +13,12 @@ use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
 use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
 use DevLancer\MinecraftMotdParser\Contracts\GeneratorInterface;
 use DevLancer\MinecraftMotdParser\Contracts\MotdItemInterface;
+use DevLancer\MinecraftMotdParser\GetValueMotdItemTrait;
 
 class RawGenerator implements GeneratorInterface
 {
+    use GetValueMotdItemTrait;
+
     private FormatCollection $formatCollection;
     private ColorCollection $colorCollection;
     private string $symbol;
@@ -30,6 +33,8 @@ class RawGenerator implements GeneratorInterface
     public function generate(MotdItemCollection $collection): string
     {
         $result = '';
+        $lastColor = null;
+        $lastFormat = [];
 
         for ($i = 0, $iMax = count($collection); $i < $iMax; ++$i) {
             $motdItem = $collection->get($i);
@@ -39,37 +44,42 @@ class RawGenerator implements GeneratorInterface
 
             $_item = '';
             $prevMotdItem = $collection->get($i - 1);
-            $hasReset = false;
-            if (!$motdItem->isReset() && $prevMotdItem && $this->hasConflictFormat($prevMotdItem, $motdItem)) {
-                $_item .= $this->symbol . 'r';
-                $hasReset = true;
-            }
-
             if ($motdItem->isReset()) {
-                $_item .= $this->symbol . 'r';
-                $hasReset = true;
+                $_item .= $this->concat(['r']);
+                $lastColor = null;
+                $lastFormat = [];
             }
 
-            if (($hasReset && $motdItem->getColor()) || ($motdItem->getColor() && !$this->prevHasColor($prevMotdItem, $motdItem->getColor()))) {
-                $color = $motdItem->getColor();
-                if (false === str_contains($color, '#')) {
-                    $_item .= $this->symbol . $this->colorCollection->get($motdItem->getColor())->getKey();
-                }
-            }
+            if ($prevMotdItem) {
+                if ($this->isConflictFormat($prevMotdItem, $motdItem) && false === $motdItem->isReset()) {
+                    $lastFormat = $this->getFormat($motdItem);
+                    $lastColor  = $this->getColor($motdItem);
+                    $_item .= $this->concat(array_merge(['r', $lastColor], $lastFormat));
+                } else {
+                    $formats = array_diff($this->getFormat($motdItem), $lastFormat);
+                    $color = $this->getColor($motdItem);
+                    if ($color && $color != $lastColor) {
+                        $lastColor = $color;
+                        $_item .= $this->concat([$color]);
+                    }
 
-            foreach ($this->formatCollection as $format) {
-                if ($format->getKey() == 'r') {
-                    continue;
+                    if ($formats != []) {
+                        $lastFormat = array_merge($lastFormat, $formats);
+                        $_item .= $this->concat($formats);
+                    }
                 }
-
-                $method = 'is' . ucfirst($format->getName());
-                if (($hasReset && $motdItem->{$method}()) || ($motdItem->{$method}() && !$this->prevHasFormat($prevMotdItem, $method))) {
-                    $_item .= $this->symbol . $format->getKey();
-                }
+            } else {
+                $lastFormat = $this->getFormat($motdItem);
+                $lastColor  = $this->getColor($motdItem);
+                $_item .= $this->concat(array_merge([$lastColor], $lastFormat));
             }
 
             if ($motdItem->getText()) {
                 $_item .= $motdItem->getText();
+                if (strpos($_item, "\n") !== false) {
+                    $lastColor = null;
+                    $lastFormat = [];
+                }
             }
 
             $result .= $_item;
@@ -78,7 +88,51 @@ class RawGenerator implements GeneratorInterface
         return $result;
     }
 
-    private function hasConflictFormat(MotdItemInterface $motdItemLeft, MotdItemInterface $motdItemRight): bool
+    private function concat(array $formats): string
+    {
+        $result = "";
+
+        foreach ($formats as $format) {
+            if (!$format) {
+                continue;
+            }
+
+            $result .= $this->symbol . $format;
+        }
+
+        return $result;
+    }
+
+    private function getFormat(MotdItemInterface $motdItem): array
+    {
+        $formats = [];
+
+        foreach ($this->formatCollection as $formatter) {
+            if ($formatter->getKey() == 'r') {
+                continue;
+            }
+
+            if ($this->getValueMotdItem($formatter->getName(), $motdItem) === true) {
+                $formats[] = $formatter->getKey();
+            }
+        }
+
+        return $formats;
+    }
+
+    private function getColor(MotdItemInterface $motdItem): ?string
+    {
+        if ($motdItem->getColor()) {
+            $color = $this->colorCollection->get($motdItem->getColor());
+            if ($color) {
+                return $color->getKey();
+            }
+        }
+
+        return null;
+    }
+
+    private function isConflictFormat(MotdItemInterface $motdItemLeft, MotdItemInterface $motdItemRight): bool
     {
         $motdItemLeft = clone $motdItemLeft;
         $motdItemRight = clone $motdItemRight;
@@ -87,43 +141,19 @@ class RawGenerator implements GeneratorInterface
             return false;
         }
 
-        foreach ($this->formatCollection as $format) {
-            if ($format->getKey() == 'r') {
+        foreach ($this->formatCollection as $formatter) {
+            if ($formatter->getKey() == 'r') {
                 continue;
             }
 
-            $method = 'is' . ucfirst($format->getName());
-            if ($motdItemLeft->{$method}() != $motdItemRight->{$method}() && $motdItemLeft->{$method}()) {
+            $leftValue = $this->getValueMotdItem($formatter->getName(), $motdItemLeft);
+            $rightValue = $this->getValueMotdItem($formatter->getName(), $motdItemRight);
+
+            if ($leftValue != $rightValue && $leftValue) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    private function prevHasColor(?MotdItemInterface $motdItem, string $color): bool
-    {
-        if (null == $motdItem) {
-            return false;
-        }
-
-        if ("\n" == $motdItem->getText()) {
-            return false;
-        }
-
-        return $motdItem->getColor() == $color;
-    }
-
-    private function prevHasFormat(?MotdItemInterface $motdItem, string $formatMethod): bool
-    {
-        if (null == $motdItem) {
-            return false;
-        }
-
-        if ("\n" == $motdItem->getText()) {
-            return false;
-        }
-
-        return $motdItem->{$formatMethod}();
     }
 }

@@ -15,11 +15,14 @@ use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
 use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
 use DevLancer\MinecraftMotdParser\Contracts\MotdItemInterface;
 use DevLancer\MinecraftMotdParser\Contracts\ParserInterface;
+use DevLancer\MinecraftMotdParser\EntryValueMotdItemTrait;
 use DevLancer\MinecraftMotdParser\MotdItem;
 use InvalidArgumentException;
 
 class ArrayParser implements ParserInterface
 {
+    use EntryValueMotdItemTrait;
+
     private ?MotdItemCollection $list = null;
     private ColorCollection $colorCollection;
     private FormatCollection $formatCollection;
@@ -30,44 +33,40 @@ class ArrayParser implements ParserInterface
         $this->formatCollection = $formatCollection ?? FormatCollection::generate();
     }
 
-    private function generate(array $data, MotdItemInterface $parent): void
+    private function generate(array $motd, MotdItemInterface $parent): void
     {
-        foreach ($data as $item) {
-            if (empty($item)) {
+        foreach ($motd as $partMotd) {
+            if (empty($partMotd)) {
                 continue;
             }
 
             $motdItem = clone $parent;
 
-            if (is_string($item)) {
-                $motdItem->setText($item);
+            if (is_string($partMotd)) {
+                $motdItem->setText($partMotd);
                 $this->list->add($motdItem);
 
                 continue;
             }
 
-            if (isset($item['color'])) {
-                if (false === str_contains($item['color'], '#')) {
-                    $color = $this->colorCollection->get($item['color']);
-                } else {
-                    $color = $this->colorCollection->getByColor($item['color']);
-                }
-                $color = (!$color) ? $item['color'] : $color->getKey();
+            if (isset($partMotd['color'])) {
+                $color = $this->colorCollection->get($partMotd['color']);
+                $color = ($color)? $color->getKey() : $partMotd['color'];
+
                 $motdItem->setColor($color);
             }
 
-            foreach ($this->formatCollection->all() as $format) {
-                $name = $format->getName();
-                if (!isset($item[$name])) {
+            foreach ($this->formatCollection->all() as $formatter) {
+                $name = $formatter->getName();
+                if (!isset($partMotd[$name])) {
                     continue;
                 }
 
-                $method = "set" . ucfirst($name);
-                call_user_func([$motdItem, $method], (bool)$item[$name]);
+                $this->entryValueMotdItem($name, (bool)$partMotd[$name], $motdItem);
             }
 
-            if (isset($item['text'])) {
-                $text = $item['text'];
+            if (isset($partMotd['text'])) {
+                $text = $partMotd['text'];
                 $newLine = strpos($text, "\n");
                 $motdItem->setText((false === $newLine) ? $text : substr($text, 0, $newLine));
                 $this->list->add($motdItem);
@@ -83,8 +82,8 @@ class ArrayParser implements ParserInterface
                 }
             }
 
-            if (isset($item['extra'])) {
-                $this->generate($item['extra'], clone $motdItem);
+            if (isset($partMotd['extra'])) {
+                $this->generate($partMotd['extra'], clone $motdItem);
             }
         }
     }

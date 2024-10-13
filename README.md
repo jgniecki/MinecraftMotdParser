@@ -11,6 +11,14 @@ This library can be installed by issuing the following command:
 ```bash
 composer require dev-lancer/minecraft-motd-parser
 ```
+
+## Documentation
+| Lang                  |
+|:----------------------|
+| [EN](docs/en/home.md) |
+| [PL](docs/pl/home.md) |
+
+
 ## Parsing
 
 ### Usage TextParser
@@ -18,7 +26,7 @@ To parse a text-based MOTD using custom formatting and colors:
 
 ```php
 $formatCollection = \DevLancer\MinecraftMotdParser\Collection\FormatCollection::generate();
-$colorCollection  = \DevLancer\MinecraftMotdParser\Collection\ColorCollection::generate();
+$colorCollection  = \DevLancer\MinecraftMotdParser\Collection\ColorCollection::generate(true); //When set to true, colors from BE are added
 $parser = new \DevLancer\MinecraftMotdParser\Parser\TextParser($formatCollection, $colorCollection, '&');
 
 $motd = "A &l&fMine&4craft &rServer";

@@ -29,7 +29,15 @@ class ColorCollection implements Countable, IteratorAggregate
      */
     private array $alias = [];
 
-    public static function generate(): self
+    /**
+     * @param bool $colorBE Optional parameter that determines whether to include additional colors specific to Bedrock Edition (BE).
+     *                      - `false` (default): Adds only colors available in Java Edition (JE).
+     *                      - `true`: Adds both Java Edition (JE) and Bedrock Edition (BE) specific colors.
+     *                      Note: The Bedrock Edition color codes `§m` and `§n` have been replaced with `§x` and `§v` respectively to avoid conflict with Java Edition's formatting codes.
+     *
+     * @return self Returns an instance of the class with the added color collection.
+     */
+    public static function generate(bool $colorBE = false): self
     {
         $collection = new self();
         $collection->add(new ColorFormat('0', 'black', '#000000'));
@@ -48,6 +56,20 @@ class ColorCollection implements Countable, IteratorAggregate
         $collection->add(new ColorFormat('d', 'light_purple', '#FF55FF'));
         $collection->add(new ColorFormat('e', 'yellow', '#FFFF55'));
         $collection->add(new ColorFormat('f', 'white', '#FFFFFF'));
+
+        if ($colorBE) {
+            $collection->add(new ColorFormat('g', 'minecoin_gold', '#DDD605'));
+            $collection->add(new ColorFormat('h', 'material_quartz', '#E3D4D1'));
+            $collection->add(new ColorFormat('i', 'material_iron', '#CECACA'));
+            $collection->add(new ColorFormat('j', 'material_netherite', '#443A3B'));
+            $collection->add(new ColorFormat('p', 'material_gold', '#DEB12D'));
+            $collection->add(new ColorFormat('q', 'material_emerald', '#47A036'));
+            $collection->add(new ColorFormat('s', 'material_diamond', '#2CBAA8'));
+            $collection->add(new ColorFormat('t', 'material_lapis', '#21497B'));
+            $collection->add(new ColorFormat('u', 'material_amethyst', '#9A5CC6'));
+            $collection->add(new ColorFormat('v', 'material_copper', '#B4684D'));
+            $collection->add(new ColorFormat('x', 'material_redstone', '#971607'));
+        }
 
         return $collection;
     }
@@ -88,6 +110,22 @@ class ColorCollection implements Countable, IteratorAggregate
         }
     }
 
+    /**
+     * Retrieves a ColorFormatterInterface instance based on the provided key.
+     *
+     * This method attempts to retrieve a color formatter using the following steps:
+     * 1. If the provided key exists in the `$items` array, the corresponding `ColorFormatterInterface` is returned.
+     * 2. If the key is an alias found in the `$alias` array, the actual key is retrieved and the process continues.
+     * 3. If the key resembles a color (contains `#`) and matches a color formatter via the `getByColor()` method, the first formatter
+     *    that matches the provided HEX color is returned.
+     * 4. If none of the above conditions are met, the method returns the value associated with the key in the `$items` array or `null` if not found.
+     *
+     * @param string $key The key or HEX color used to retrieve the color formatter. The key can either be:
+     * - A direct key in the `$items` array.
+     * - An alias that is mapped to a key in the `$items` array.
+     * - A HEX color code (e.g., "#FFFFFF").
+     * @return ColorFormatterInterface|null Returns the matching `ColorFormatterInterface` instance or `null` if no match is found.
+     */
     public function get(string $key): ?ColorFormatterInterface
     {
         if (isset($this->items[$key])) {
@@ -98,9 +136,24 @@ class ColorCollection implements Countable, IteratorAggregate
             $key = $this->alias[$key];
         }
 
+        if (strpos($key, "#") && $this->getByColor($key)) {
+            return $this->getByColor($key);
+        }
+
         return $this->items[$key] ?? null;
     }
 
+    /**
+     * Retrieves the first ColorFormatterInterface instance that uses the specified color.
+     * If multiple formatters use the given color, the first matching instance is returned.
+     *
+     * Iterates over the collection of color formatters and compares the specified HEX color
+     * with the result of each formatter's getColor() method.
+     *
+     * @param string $color HEX color code to search for (e.g., "#FFFFFF").
+     * @return ColorFormatterInterface|null Returns the first matching ColorFormatterInterface
+     * instance, or null if no formatter with the specified color is found.
+     */
     public function getByColor(string $color): ?ColorFormatterInterface
     {
         foreach ($this->items as $item) {
