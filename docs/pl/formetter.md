@@ -2,8 +2,6 @@
 
 Minecraft MOTD wykorzystuje specjalne kody formatowania (znaki lub tablice) do modyfikacji wyglądu tekstu. Nasza biblioteka pozwala na definiowanie własnych formatterów obok standardowych kodów, dzięki czemu można kontrolować sposób formatowania tekstu.
 
-Warto zauważyć, że w obecnej wersji klasy `TextParser` używane są wyrażenia regularne, które ograniczają formatowanie do standardowych kluczy MOTD (`0-9`, `a-f`, `k-o`, `r`). Ograniczenie to nie dotyczy klasy `ArrayParser`.
-
 ## Spis treści
 1. [Tworzenie formattera](formetter.md#tworzenie-formattera)
    1. [Podstawowy formatter](formetter.md#podstawowy-formatter)
@@ -219,23 +217,34 @@ Zgodność kodów formatów z listą na stronie [minecraft wiki](https://minecra
 
 Formattery dla kolorów tworzone są za pomocą klasy `ColorFormat`, oto lista dostępnych kolorów:
 
-| Code | Name         |
-|:-----|:-------------|
-| 0    | black        |
-| 1    | dark_blue    |
-| 2    | dark_green   |
-| 3    | dark_aqua    |
-| 4    | dark_red     |
-| 5    | dark_purple  |
-| 6    | gold         |
-| 7    | gray         |
-| 8    | dark_gray    |
-| 9    | blue         |
-| a    | green        |
-| b    | aqua         |
-| c    | red          |
-| d    | light_purple |
-| e    | yellow       |
-| f    | white        |
+| Code               | Name               |
+|:-------------------|:-------------------|
+| 0                  | black              |
+| 1                  | dark_blue          |
+| 2                  | dark_green         |
+| 3                  | dark_aqua          |
+| 4                  | dark_red           |
+| 5                  | dark_purple        |
+| 6                  | gold               |
+| 7                  | gray               |
+| 8                  | dark_gray          |
+| 9                  | blue               |
+| a                  | green              |
+| b                  | aqua               |
+| c                  | red                |
+| d                  | light_purple       |
+| e                  | yellow             |
+| f                  | white              |
+| g                  | minecoin_gold      |
+| h                  | material_quartz    |
+| i                  | material_iron      |
+| j                  | material_netherite |
+| p                  | material_gold      |
+| q                  | material_emerald   |
+| s                  | material_diamond   |
+| t                  | material_lapis     |
+| u                  | material_amethyst  |
+| v (changed from n) | material_copper    |
+| x (changed from m) | material_redstone  |
 
 ---

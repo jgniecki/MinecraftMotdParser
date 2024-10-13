@@ -29,7 +29,15 @@ class ColorCollection implements Countable, IteratorAggregate
      */
     private array $alias = [];
 
-    public static function generate(): self
+    /**
+     * @param bool $colorBE Optional parameter that determines whether to include additional colors specific to Bedrock Edition (BE).
+     *                      - `false` (default): Adds only colors available in Java Edition (JE).
+     *                      - `true`: Adds both Java Edition (JE) and Bedrock Edition (BE) specific colors.
+     *                      Note: The Bedrock Edition color codes `§m` and `§n` have been replaced with `§x` and `§v` respectively to avoid conflict with Java Edition's formatting codes.
+     *
+     * @return self Returns an instance of the class with the added color collection.
+     */
+    public static function generate(bool $colorBE = false): self
     {
         $collection = new self();
         $collection->add(new ColorFormat('0', 'black', '#000000'));
@@ -48,6 +56,20 @@ class ColorCollection implements Countable, IteratorAggregate
         $collection->add(new ColorFormat('d', 'light_purple', '#FF55FF'));
         $collection->add(new ColorFormat('e', 'yellow', '#FFFF55'));
         $collection->add(new ColorFormat('f', 'white', '#FFFFFF'));
+
+        if ($colorBE) {
+            $collection->add(new ColorFormat('g', 'minecoin_gold', '#DDD605'));
+            $collection->add(new ColorFormat('h', 'material_quartz', '#E3D4D1'));
+            $collection->add(new ColorFormat('i', 'material_iron', '#CECACA'));
+            $collection->add(new ColorFormat('j', 'material_netherite', '#443A3B'));
+            $collection->add(new ColorFormat('p', 'material_gold', '#DEB12D'));
+            $collection->add(new ColorFormat('q', 'material_emerald', '#47A036'));
+            $collection->add(new ColorFormat('s', 'material_diamond', '#2CBAA8'));
+            $collection->add(new ColorFormat('t', 'material_lapis', '#21497B'));
+            $collection->add(new ColorFormat('u', 'material_amethyst', '#9A5CC6'));
+            $collection->add(new ColorFormat('v', 'material_copper', '#B4684D'));
+            $collection->add(new ColorFormat('x', 'material_redstone', '#971607'));
+        }
 
         return $collection;
     }
