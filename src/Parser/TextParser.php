@@ -11,15 +11,24 @@ namespace DevLancer\MinecraftMotdParser\Parser;
 use DevLancer\MinecraftMotdParser\Collection\ColorCollection;
 use DevLancer\MinecraftMotdParser\Collection\FormatCollection;
 use DevLancer\MinecraftMotdParser\Collection\MotdItemCollection;
+use DevLancer\MinecraftMotdParser\Contracts\ColorFormatterInterface;
+use DevLancer\MinecraftMotdParser\Contracts\FormatterInterface;
 use DevLancer\MinecraftMotdParser\Contracts\ParserInterface;
+use DevLancer\MinecraftMotdParser\EntryValueMotdItemTrait;
 use DevLancer\MinecraftMotdParser\MotdItem;
 use InvalidArgumentException;
 
 class TextParser implements ParserInterface
 {
+    use EntryValueMotdItemTrait;
     private string $symbol;
     private FormatCollection $formatCollection;
     private ColorCollection $colorCollection;
+
+    /**
+     * @var array<string, FormatterInterface>
+     */
+    private array $collection;
     private bool $strictFormat;
 
     public function __construct(?FormatCollection $formatCollection = null, ?ColorCollection $colorCollection = null, string $symbol = '§', bool $strictFormat = false)
@@ -28,6 +37,8 @@ class TextParser implements ParserInterface
         $this->formatCollection = $formatCollection ?? FormatCollection::generate();
         $this->colorCollection = $colorCollection ?? ColorCollection::generate();
         $this->strictFormat = $strictFormat;
+
+        $this->generateCollection();
     }
 
     public function isStrictFormat(): bool
@@ -57,54 +68,47 @@ class TextParser implements ParserInterface
             return $collection;
         }
 
-        $strictFormat = ($this->strictFormat) ? '' : 'A-FKLMNOR';
-
-        $regex = sprintf('/%s[0-9a-fklmnor%s]|[^%s]+/', $this->symbol, $strictFormat, $this->symbol);
-        $regexKey = sprintf('/^%s([0-9a-fklmnor%s])$/', $this->symbol, $strictFormat);
+        $formatKeys = $this->generateFormatKeys();
+        $regex = sprintf('/%s[%s]|[^%s]+/', $this->symbol, $formatKeys, $this->symbol);
+        $regexKey = sprintf('/^%s([%s])$/', $this->symbol, $formatKeys);
         $lines = (array)preg_split('/\n/', $data);
-        for ($i = 0; $i < count($lines); ++$i) {
+        for ($i = 0, $iMax = count($lines); $i < $iMax; ++$i) {
             $motdItem = new MotdItem();
             $line = (string)$lines[$i];
-            preg_match_all($regex, $line, $output);
-
-            if (empty($output[0])) {
+            preg_match_all($regex, $line, $motd);
+            if (empty($motd[0])) {
                 continue;
             }
 
-            $values = $output[0];
-
-            foreach ($values as $value) {
-                preg_match($regexKey, $value, $match);
+            $partsMotd = $motd[0];
+            foreach ($partsMotd as $item) {
+                preg_match($regexKey, $item, $match);
                 $key = $match[1] ?? null;
                 $motdItem = ('r' == $key) ? new MotdItem() : clone $motdItem;
 
                 if (null === $key) {
-                    if (strlen($value) == 0 && empty($value)) {
+                    if (strlen($item) == 0 && empty($item)) {
                         continue;
                     }
 
-                    $motdItem->setText($value);
+                    $motdItem->setText($item);
                     $collection->add($motdItem);
+
+                    if ($motdItem->isReset()) {
+                        $motdItem = clone $motdItem;
+                        $motdItem->setReset(false);
+                    }
 
                     continue;
                 }
 
-                if ($motdItem->isReset()) {
-                    $motdItem->setReset(false);
-                }
-
-                if ($this->colorCollection->get($key)) {
-                    $motdItem->setColor($key);
-                } else {
-                    $formatter = $this->formatCollection->get($key);
-                    if (!$formatter) {
-                        continue;
-                    }
-
-                    $method = 'set' . ucfirst($formatter->getName());
-                    call_user_func([$motdItem, $method], true);
+                $formatter = $this->collection[$key] ?? null;
+                if ($formatter) {
+                    $set = ($formatter instanceof ColorFormatterInterface)? $formatter->getKey() : true;
+                    $motdItem = $this->entryValueMotdItem($formatter->getName(), $set, $motdItem);
                 }
             }
+
             if ($i + 1 < count($lines)) {
                 $newLine = new MotdItem();
                 $newLine->setText("\n");
@@ -121,5 +125,23 @@ class TextParser implements ParserInterface
     public function supports($data): bool
     {
         return is_string($data) && !empty($data);
+    }
+
+    private function generateCollection()
+    {
+        $formats = array_merge($this->colorCollection->all(), $this->formatCollection->all());
+
+        foreach ($formats as $item) {
+            $this->collection[$item->getKey()] = $item;
+
+            if (false === $this->strictFormat) {
+                $this->collection[strtoupper($item->getKey())] = $item;
+            }
+        }
+    }
+
+    private function generateFormatKeys(): string
+    {
+        return implode("", array_keys($this->collection));
     }
 }
