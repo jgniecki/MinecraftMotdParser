@@ -26,7 +26,7 @@ To parse a text-based MOTD using custom formatting and colors:
 
 ```php
 $formatCollection = \DevLancer\MinecraftMotdParser\Collection\FormatCollection::generate();
-$colorCollection  = \DevLancer\MinecraftMotdParser\Collection\ColorCollection::generate();
+$colorCollection  = \DevLancer\MinecraftMotdParser\Collection\ColorCollection::generate(true); //When set to true, colors from BE are added
 $parser = new \DevLancer\MinecraftMotdParser\Parser\TextParser($formatCollection, $colorCollection, '&');
 
 $motd = "A &l&fMine&4craft &rServer";
