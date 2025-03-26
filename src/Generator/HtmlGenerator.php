@@ -88,12 +88,12 @@ class HtmlGenerator implements GeneratorInterface
         $this->formatNewLine = $format;
     }
 
-    private function escape(string $text): string
+    protected function escape(string $text): string
     {
         return htmlentities($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
-    private function format(FormatterInterface $formatter, array &$tags, string &$value)
+    protected function format(FormatterInterface $formatter, array &$tags, string &$value)
     {
         if ($formatter instanceof HtmlFormatterInterface) {
             $tags[$formatter->getTag()][] = $formatter->getStyle();
